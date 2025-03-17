@@ -1,0 +1,40 @@
+services:
+  app:
+    container_name: spring_app
+    restart: always
+    depends_on:
+      - db
+    image: awesomity-challenge
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ems
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_USERNAME: hitimanadav47@gmail.com
+      SPRING_MAIL_PASSWORD: yfpd vtmw emrc talm
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+
+    ports:
+      - "8080:8080"
+
+  db:
+    image: postgres
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ems
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
