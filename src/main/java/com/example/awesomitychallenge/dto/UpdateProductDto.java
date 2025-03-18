@@ -26,6 +26,6 @@ public class UpdateProductDto {
     @Min(value = 0, message = "Quantity must be a positive value")
     private int quantity;
 
-    @NotBlank(message = "Category cannot be blank")
-    private String category;
+    @NotNull(message = "Category cannot be blank")
+    private Long  categoryId;
 }

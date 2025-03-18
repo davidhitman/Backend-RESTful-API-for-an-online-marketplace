@@ -25,6 +25,7 @@ public class CreateProductDto {
     @Min(value = 0, message = "Quantity must be a positive value")
     private int quantity;
 
-    @NotBlank(message = "CategoryId cannot be blank")
+    @NotNull(message = "CategoryId cannot be blank")
     private Long categoryId;
+
 }

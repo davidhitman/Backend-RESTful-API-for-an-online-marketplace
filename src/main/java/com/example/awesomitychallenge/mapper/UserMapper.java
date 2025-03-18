@@ -4,6 +4,7 @@ package com.example.awesomitychallenge.mapper;
 import com.example.awesomitychallenge.dto.CreateAdminDto;
 import com.example.awesomitychallenge.dto.CreateUserDto;
 import com.example.awesomitychallenge.dto.UserDto;
+import com.example.awesomitychallenge.dto.ViewUserDto;
 import com.example.awesomitychallenge.entities.Role;
 import com.example.awesomitychallenge.entities.Users;
 
@@ -46,4 +47,5 @@ public class UserMapper {
                 Role.ADMIN
         );
     }
+
 }

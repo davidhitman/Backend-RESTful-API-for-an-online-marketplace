@@ -1,5 +1,6 @@
 package com.example.awesomitychallenge.dto;
 
+
 import com.example.awesomitychallenge.entities.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -14,7 +15,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateUserDto {
+public class ViewUserDto {
     @NotBlank(message = "First name cannot be blank")
     private String firstName;
 
@@ -34,4 +35,7 @@ public class CreateUserDto {
 
     @NotBlank(message = "Address cannot be blank")
     private String address;
+
+    @NotBlank(message="Role cannot be blank")
+    private Role role;
 }

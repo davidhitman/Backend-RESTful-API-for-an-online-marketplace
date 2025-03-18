@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Category")
+@Table(name = "category")
 
 public class Category {
     @Id // id is the primary key
@@ -19,6 +19,6 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "category")
+    @Column(name = "name")
     private String category;
 }

@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Orders")
+@Table(name = "orders")
 
 
 public class Orders {
@@ -42,7 +42,7 @@ public class Orders {
     @Column(name = "address")
     private String address;
 
-    @Column(name="orderStatus")
+    @Column(name="order_status")
     private String orderStatus;
 
 }

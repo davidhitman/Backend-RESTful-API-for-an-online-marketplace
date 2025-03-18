@@ -26,4 +26,7 @@ public class ProductDto {
 
     @NotBlank(message="featured cannot be blank")
     private boolean featured;
+
+    @NotBlank(message = "feature cannot be blank")
+    private String category;
 }

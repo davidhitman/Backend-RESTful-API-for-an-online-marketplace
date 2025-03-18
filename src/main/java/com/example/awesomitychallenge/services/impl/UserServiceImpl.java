@@ -3,6 +3,7 @@ package com.example.awesomitychallenge.services.impl;
 import com.example.awesomitychallenge.dto.CreateAdminDto;
 import com.example.awesomitychallenge.dto.CreateUserDto;
 import com.example.awesomitychallenge.dto.UpdateUserDto;
+import com.example.awesomitychallenge.dto.UserDto;
 import com.example.awesomitychallenge.entities.AuthenticationResponse;
 import com.example.awesomitychallenge.entities.Role;
 import com.example.awesomitychallenge.entities.Users;
@@ -11,6 +12,8 @@ import com.example.awesomitychallenge.repositories.UserRepository;
 import com.example.awesomitychallenge.services.JwtService;
 import com.example.awesomitychallenge.services.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,14 +77,14 @@ public  class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void deleteUser(String email) {
-        Optional<Users> get_user = users_repository.findByEmail(email);
-        get_user.ifPresent(users -> users_repository.delete(users));
+    public void deleteUser(Long id) {
+        Optional<Users> getUser = users_repository.findById(id);
+        getUser.ifPresent(users -> users_repository.delete(users));
     }
 
     @Override
-    public void updateUser(String email, UpdateUserDto users) {
-        Optional<Users> existingUser = users_repository.findByEmail(email);
+    public void updateUser(Long id, UpdateUserDto users) {
+        Optional<Users> existingUser = users_repository.findById(id);
         String encodePassword = passwordEncoder.encode(users.getPassword());
         users.setPassword(encodePassword);
         if (existingUser.isPresent()) {
@@ -93,13 +97,21 @@ public  class UserServiceImpl implements UserService {
             user.setAddress(users.getAddress());
             users_repository.save(user);
         } else {
-            throw new RuntimeException("User with email " + email + " not found.");
+            throw new RuntimeException("User with email " + id + " not found.");
             }
 
     }
     @Override
-    public List<Users> viewAllUsers() {
-        return users_repository.findAllUsers();
+    public List<UserDto> viewAllUsers(int page, int size) {
+
+        var usersPage = users_repository.findAllUsers(PageRequest.of(page, size));
+        var retrievedUsers = usersPage.getContent();
+        List<UserDto> users = new ArrayList<>();
+        for (Users retrievedUser : retrievedUsers) {
+            var user = UserMapper.map(retrievedUser);
+            users.add(user);
+        }
+        return(users);
     }
 
     @Override

@@ -9,12 +9,12 @@ import com.example.awesomitychallenge.repositories.CategoryRepository;
 import com.example.awesomitychallenge.repositories.ProductRepository;
 import com.example.awesomitychallenge.services.ProductService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -32,29 +32,28 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product);
     }
 
-    @Override
-    public List<ProductDto> browserByCategory(String category) {
-        var products = productRepository.findByCategory(category);
-        if (products != null) {
-            return products.stream().map(ProductMapper::map).collect(Collectors.toList());
-        }else{
-            throw new RuntimeException("Product Not Found");
-        }
-    }
-
     @Transactional
     @Override
     public void deleteProduct(Long Id) {
         var product = productRepository.findById(Id);
         if (product.isPresent()) {
-            throw new RuntimeException("Product with name " + Id + " not found.");
+            productRepository.deleteById(Id);
+        }else{
+            throw new RuntimeException("Product with Id " + Id + " not found.");
         }
-        productRepository.deleteById(Id);
+
     }
 
     @Override
-    public List<Products> viewAllProducts() {
-        return productRepository.findAllProducts();
+    public List<Products> viewAllProducts(String categorySearch, int page, int size) {
+        if (categorySearch != null && !categorySearch.isEmpty()) {
+            var productPage = productRepository.findByCategory(categorySearch, PageRequest.of(page, size));
+            return productPage.getContent();
+
+        }else{
+            var productPage = productRepository.findAll(PageRequest.of(page, size));
+            return productPage.getContent();
+        }
     }
 
     @Override
@@ -70,12 +69,14 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Products updateProduct(Long Id, UpdateProductDto updatedProduct) {
         var existingProduct = productRepository.findById(Id);
+        var categoryId = updatedProduct.getCategoryId();
+        var category = categoryRepository.findCategoryById(categoryId);
         if (existingProduct.isPresent()) {
             var product = existingProduct.get();
             product.setProductName(updatedProduct.getProductName());
             product.setPrice(updatedProduct.getPrice());
             product.setQuantity(updatedProduct.getQuantity());
-            product.setCategory(updatedProduct.getCategory());
+            product.setCategory(category.getCategory());
             return productRepository.save(product);
         }else {
             throw new RuntimeException("Product with name " + Id + " not found.");
@@ -88,23 +89,6 @@ public class ProductServiceImpl implements ProductService {
             product.setFeatured(true);
             return productRepository.save(product);
         }).orElseThrow(() -> new RuntimeException("Product not found"));
-    }
-
-    @Override
-    public List<String> getAllCategories() {
-        return productRepository.findAllCategory();
-    }
-
-    @Override
-    public void updateCategory(Long id, String new_category) {
-        Optional<Products> product = productRepository.findById(id);
-        if (product.isPresent()) {
-            Products updatedProduct = product.get();
-            updatedProduct.setCategory(new_category);
-            productRepository.save(updatedProduct);
-        }else{
-            throw new RuntimeException("Product not found");
-        }
     }
 }
 

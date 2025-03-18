@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/categories")
 public class CategoryController {
     private CategoryService categoryService;
-    @Operation(summary = "Storing a category", description = "Allows Admins to register an category")
+    @Operation(summary = "Adding category", description = "Allows Admins to register an category")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PostMapping
     public ResponseEntity<String> addCategory(@RequestParam String category) {

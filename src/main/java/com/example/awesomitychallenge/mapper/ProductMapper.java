@@ -13,7 +13,8 @@ public class ProductMapper {
                 products.getProductName(),
                 products.getPrice(),
                 products.getQuantity(),
-                products.isFeatured()
+                products.isFeatured(),
+                products.getCategory()
         );
     }
     public static Products map(CreateProductDto productDto){

@@ -11,14 +11,14 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Products")
+@Table(name = "products")
 public class Products {
     @Id // id is the primary key
     // auto generation (auto incrementation of the id primary key)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "product_name")
+    @Column(name = "name")
     private String productName;
 
     @Column(name = "price")
@@ -39,6 +39,4 @@ public class Products {
         this.quantity = quantity;
         this.featured = featured;
     }
-
-
 }

@@ -11,8 +11,11 @@ import com.example.awesomitychallenge.mapper.OrderMapper;
 import com.example.awesomitychallenge.repositories.OrderRepository;
 import com.example.awesomitychallenge.repositories.ProductRepository;
 import com.example.awesomitychallenge.repositories.UserRepository;
+import com.example.awesomitychallenge.services.JwtService;
 import com.example.awesomitychallenge.services.OrderService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,6 +34,7 @@ public class OrderServiceImpl implements OrderService {
     private ProductRepository product_repository;
     private UserRepository users_repository;
     private JavaMailSender mail_sender;
+    private JwtService jwtService;
 
     public String getAuthenticatedUserEmail() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -72,18 +76,10 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
-    public List<OrderDto> viewOrderHistory(String email) {
-        List<Orders> orders = orders_repository.findByEmail(email);
-        if(!orders.isEmpty()) {
-            List<OrderDto> orderDtos = new ArrayList<>();
-            for (Orders order : orders) {
-                OrderDto orderdto = OrderMapper.mapToOrderdto(order);
-                orderDtos.add(orderdto);
-            }
-            return orderDtos;
-        }else{
-            throw new RuntimeException("User has no Orders");
-        }
+    public List<Orders> viewOrderHistory(int page, int size) {
+        String email = getAuthenticatedUserEmail();
+        var orders = orders_repository.findByEmail(email, PageRequest.of(page, size));
+        return (orders.getContent());
     }
 
     @Override
@@ -146,12 +142,22 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public String getOrderStatus(Long orderId) {
-        return orders_repository.findById(orderId)
-                .map(Orders::getOrderStatus)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+    public OrderDto viewOrder(Long id) {
+        Optional<Orders> existingOrderOpt = orders_repository.findById(id);
+        if (existingOrderOpt.isPresent()) {
+            Orders existingOrder = existingOrderOpt.get();
+            OrderDto order = OrderMapper.mapToOrderdto(existingOrder);
+            String storedEmail = order.getEmail();
+            String signedInEmail = getAuthenticatedUserEmail();
+            if (!storedEmail.equals(signedInEmail)) {
+                throw new RuntimeException("You have no order with id:" + id );
+            }else{
+                return order;
+            }
+        }else{
+            throw new RuntimeException("Order with Id " + id + " not found.");
+        }
     }
-
 }
 
 
