@@ -18,11 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/categories")
 public class CategoryController {
     private CategoryService categoryService;
+
     @Operation(summary = "Adding category", description = "Allows Admins to register an category")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @PostMapping
-    public ResponseEntity<String> addCategory(@RequestParam String category) {
+    public ResponseEntity<GenericResponse<String>> addCategory(@RequestParam String category) {
         categoryService.addCategory(category);
-        return ResponseEntity.ok("Category has been registered successfully");
+        return ResponseEntity.ok(new GenericResponse<>("Category added successfully", "Category added" + category));
     }
 }

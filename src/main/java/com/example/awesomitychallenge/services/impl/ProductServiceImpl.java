@@ -14,8 +14,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 
 @Service
 @AllArgsConstructor
@@ -24,12 +22,18 @@ public class ProductServiceImpl implements ProductService {
     private CategoryRepository categoryRepository;
 
     @Override
-    public void registerProduct(CreateProductDto productDto) {
+    public ProductDto registerProduct(CreateProductDto productDto) {
         Long categoryId = productDto.getCategoryId();
         var category = categoryRepository.findCategoryById(categoryId);
-        Products product = ProductMapper.map(productDto);
-        product.setCategory(category.getCategory());
-        productRepository.save(product);
+        boolean exists = productRepository.existsByProductNameAndCategoryAndPrice(productDto.getProductName(), category.getCategory(), productDto.getPrice());
+        if (!exists) {
+            Products product = ProductMapper.map(productDto);
+            product.setCategory(category);
+            productRepository.save(product);
+            return ProductMapper.map(product);
+        } else {
+            throw new RuntimeException("Product with name " + productDto.getProductName() + " already exists.");
+        }
     }
 
     @Transactional
@@ -38,21 +42,20 @@ public class ProductServiceImpl implements ProductService {
         var product = productRepository.findById(Id);
         if (product.isPresent()) {
             productRepository.deleteById(Id);
-        }else{
+        } else {
             throw new RuntimeException("Product with Id " + Id + " not found.");
         }
 
     }
 
     @Override
-    public List<Products> viewAllProducts(String categorySearch, int page, int size) {
+    public Page<Products> viewAllProducts(String categorySearch, int page, int size) {
         if (categorySearch != null && !categorySearch.isEmpty()) {
-            var productPage = productRepository.findByCategory(categorySearch, PageRequest.of(page, size));
-            return productPage.getContent();
+            return productRepository.findByCategory(categorySearch, PageRequest.of(page, size));
 
-        }else{
-            var productPage = productRepository.findAll(PageRequest.of(page, size));
-            return productPage.getContent();
+
+        } else {
+            return productRepository.findAll(PageRequest.of(page, size));
         }
     }
 
@@ -61,7 +64,7 @@ public class ProductServiceImpl implements ProductService {
         var product = productRepository.findById(id);
         if (product.isPresent()) {
             return ProductMapper.map(product.get());
-        }else{
+        } else {
             throw new RuntimeException("Product Not Found");
         }
     }
@@ -76,9 +79,9 @@ public class ProductServiceImpl implements ProductService {
             product.setProductName(updatedProduct.getProductName());
             product.setPrice(updatedProduct.getPrice());
             product.setQuantity(updatedProduct.getQuantity());
-            product.setCategory(category.getCategory());
+            product.setCategory(category);
             return productRepository.save(product);
-        }else {
+        } else {
             throw new RuntimeException("Product with name " + Id + " not found.");
         }
     }

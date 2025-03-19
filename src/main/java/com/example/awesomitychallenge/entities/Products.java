@@ -1,9 +1,6 @@
 package com.example.awesomitychallenge.entities;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -27,11 +24,14 @@ public class Products {
     @Column(name = "quantity")
     private int quantity;
 
-    @Column(name="category")
-    private String category;
+    @ManyToOne
+    @JoinColumn(name = "category", nullable = false)
+    private Category category;
+
 
     @Column(name = "featured")
     private boolean featured;
+
 
     public Products(String productName, Long price, int quantity, boolean featured) {
         this.productName = productName;

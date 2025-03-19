@@ -13,9 +13,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void addCategory(String category) {
-        var saveCategory = new Category();
-        saveCategory.setCategory(category);
-        categoryRepository.save(saveCategory);
+        var existCategory = categoryRepository.findCategoryByCategory(category);
+        if (existCategory.isEmpty()) {
+            Category categoryEntity = new Category();
+            categoryEntity.setCategory(category);
+            categoryRepository.save(categoryEntity);
+        } else {
+            throw new RuntimeException("Category already exists");
+        }
     }
 
 }

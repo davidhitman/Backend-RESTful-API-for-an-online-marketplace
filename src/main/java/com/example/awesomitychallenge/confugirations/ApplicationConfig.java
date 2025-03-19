@@ -1,7 +1,6 @@
 package com.example.awesomitychallenge.confugirations;
 
 import com.example.awesomitychallenge.repositories.UserRepository;
-import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -28,8 +27,7 @@ public class ApplicationConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> user_repository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return username -> user_repository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     @Bean
@@ -53,17 +51,7 @@ public class ApplicationConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        return new OpenAPI()
-                .info(new Info()
-                        .title("Awesomity Challenge API Documentation")
-                        .description("API documentation for Awesomity Challenge, covering authentication, orders, products, and user management.")
-                )
-                .security(Collections.singletonList(new SecurityRequirement().addList("BearerAuth")))
-                .components(new Components()
-                        .addSecuritySchemes("BearerAuth", new SecurityScheme()
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT")));
+        return new OpenAPI().info(new Info().title("Awesomity Challenge API Documentation").description("API documentation for Awesomity Challenge, covering authentication, orders, products, and user management.")).security(Collections.singletonList(new SecurityRequirement().addList("BearerAuth"))).components(new io.swagger.v3.oas.models.Components().addSecuritySchemes("BearerAuth", new SecurityScheme().name("bearerAuth").type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")));
     }
 
 }

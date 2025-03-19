@@ -6,16 +6,14 @@ import com.example.awesomitychallenge.dto.UserDto;
 import com.example.awesomitychallenge.entities.AuthenticationResponse;
 import com.example.awesomitychallenge.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
 
 
 @Tag(name = "Authentication Controller", description = "Handles user login authentication and registration")
@@ -29,21 +27,19 @@ public class AuthController {
 
     @Operation(summary = "User Sign Up", description = "Registers a new user in the system")
     @PostMapping
-    public ResponseEntity<String> userSignUp(@RequestBody CreateUserDto userDto){
+    @SecurityRequirement(name = "none")
+    public ResponseEntity<GenericResponse<UserDto>> userSignUp(@RequestBody CreateUserDto userDto) {
         var userSignup = userService.userSignUp(userDto);
-        if (userSignup){
-            return ResponseEntity.ok("User Registered Successfully!");
-        }else{
-            return ResponseEntity.ok("Email Already Exists!");
-        }
+        return ResponseEntity.ok(new GenericResponse<>("User Registered successfully", userSignup));
     }
 
     @Operation(summary = "User Login", description = "Allows users to log in and receive authentication token")
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody LoginDto credentials) {
+    @SecurityRequirement(name = "none")
+    public ResponseEntity<GenericResponse<AuthenticationResponse>> login(@RequestBody LoginDto credentials) {
         String email = credentials.getEmail();
         String password = credentials.getPassword();
         var token = userService.login(email, password);
-        return new ResponseEntity<>(token, HttpStatus.OK);
+        return ResponseEntity.ok(new GenericResponse<>("token", token));
     }
 }

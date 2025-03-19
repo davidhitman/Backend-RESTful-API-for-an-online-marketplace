@@ -23,18 +23,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class OrderServiceImpl implements OrderService {
-    private OrderRepository orders_repository;
-    private ProductRepository product_repository;
-    private UserRepository users_repository;
-    private JavaMailSender mail_sender;
-    private JwtService jwtService;
+    private OrderRepository orderRepository;
+    private ProductRepository productRepository;
+    private UserRepository userRepository;
+    private JavaMailSender mailSender;
 
     public String getAuthenticatedUserEmail() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -45,57 +42,60 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void placeOrders(String productName, int quantity) {
+    public OrderDto placeOrders(String productName, int quantity) {
         Orders order = new Orders();
         var email = getAuthenticatedUserEmail();
-        Optional<Users> usersOptional = users_repository.findByEmail(email);
-        Users user = usersOptional.get();
-        Products product = product_repository.findByProductName(productName);
-        if (product != null) {
-            if (product.getQuantity() > quantity) {
-                order.setProductName(productName);
-                order.setQuantity(quantity);
-                order.setFirstName(user.getFirstName());
-                order.setLastName(user.getLastName());
-                order.setEmail(email);
-                order.setCategory(product.getCategory());
-                order.setPhoneNumber(user.getPhoneNumber());
-                order.setAddress(user.getAddress());
-                order.setOrderStatus("Order Placed");
-                orders_repository.save(order);
-                product.setQuantity(product.getQuantity() - quantity);
-                product_repository.save(product);
+        Optional<Users> usersOptional = userRepository.findByEmail(email);
+        if (usersOptional.isPresent()) {
+            Users user = usersOptional.get();
+            Products product = productRepository.findByProductName(productName);
+            if (product != null) {
+                if (product.getQuantity() > quantity) {
+                    order.setProductName(productName);
+                    order.setQuantity(quantity);
+                    order.setFirstName(user.getFirstName());
+                    order.setLastName(user.getLastName());
+                    order.setEmail(email);
+                    order.setCategory(product.getCategory());
+                    order.setPhoneNumber(user.getPhoneNumber());
+                    order.setAddress(user.getAddress());
+                    order.setOrderStatus("Order Placed");
+                    orderRepository.save(order);
+                    product.setQuantity(product.getQuantity() - quantity);
+                    productRepository.save(product);
+                    return OrderMapper.mapToOrderdto(order);
+                } else {
+                    throw new RuntimeException("Insufficient product quantity available");
+                }
             } else {
-                throw new RuntimeException("Insufficient product quantity available");
+                throw new RuntimeException("Product not found");
             }
         } else {
-            throw new RuntimeException("Product not found");
-            }
-
+            throw new RuntimeException("LogIn to place an order");
+        }
     }
 
 
     @Override
-    public List<Orders> viewOrderHistory(int page, int size) {
+    public Page<Orders> viewOrderHistory(int page, int size) {
         String email = getAuthenticatedUserEmail();
-        var orders = orders_repository.findByEmail(email, PageRequest.of(page, size));
-        return (orders.getContent());
+        return orderRepository.findByEmail(email, PageRequest.of(page, size));
     }
 
     @Override
     @Transactional
     public void deleteOrderById(Long id) {
-        if (!orders_repository.existsById(id)) {
+        if (!orderRepository.existsById(id)) {
             throw new RuntimeException("Order with Id " + id + " not found.");
         }
-        orders_repository.deleteById(id);
+        orderRepository.deleteById(id);
     }
 
     @Override
     @Transactional
-    public void updateOrder(Long id, String product_name, int quantity) {
-        Optional<Orders> existingOrderOpt = orders_repository.findById(id);
-        Products product = product_repository.findByProductName(product_name);
+    public OrderDto updateOrder(Long id, String product_name, int quantity) {
+        Optional<Orders> existingOrderOpt = orderRepository.findById(id);
+        Products product = productRepository.findByProductName(product_name);
         if (existingOrderOpt.isPresent()) {
             Orders existingOrder = existingOrderOpt.get();
             if (existingOrder.getProductName().equals(product_name)) {
@@ -103,58 +103,66 @@ public class OrderServiceImpl implements OrderService {
                     var difference = existingOrder.getQuantity() - quantity;
                     existingOrder.setQuantity(quantity);
                     product.setQuantity(product.getQuantity() + difference);
-                    product_repository.save(product);
-                    orders_repository.save(existingOrder);
+                    productRepository.save(product);
+                    orderRepository.save(existingOrder);
                 } else if (quantity > existingOrder.getQuantity()) {
                     if (product.getQuantity() >= quantity) {
                         var difference = quantity - existingOrder.getQuantity();
                         existingOrder.setQuantity(quantity);
                         product.setQuantity(product.getQuantity() - difference);
-                        product_repository.save(product);
-                        orders_repository.save(existingOrder);
+                        productRepository.save(product);
+                        orderRepository.save(existingOrder);
                     } else {
                         throw new RuntimeException("Insufficient product quantity available");
                     }
-                }else if (quantity == 0) {
+                } else if (quantity == 0) {
                     deleteOrderById(id);
-                }else{
+                } else {
                     throw new RuntimeException("You have not made any changes");
                 }
-            }else{
-                throw new RuntimeException("The Product with name does not match your order");
+                return OrderMapper.mapToOrderdto(existingOrder);
+            } else {
+                throw new RuntimeException("The Product with name" + product_name + " does not match your order");
             }
-        }else {
+        } else {
             throw new RuntimeException("Order with Id " + id + " not found.");
         }
     }
 
     @Override
-    public Orders updateOrderStatus(Long orderId, String newStatus) {
+    public OrderDto updateOrderStatus(Long orderId, String newStatus) {
         SimpleMailMessage message = new SimpleMailMessage();
-        return orders_repository.findById(orderId).map(order -> {
+        Optional<Orders> orderOptional = orderRepository.findById(orderId);
+        if (orderOptional.isEmpty()) {
+            throw new RuntimeException("Order not found");
+        } else {
+            Orders order = orderOptional.get();
             order.setOrderStatus(newStatus);
+            orderRepository.save(order);
+
             message.setTo(order.getEmail());
             message.setSubject("Order Status Changed");
-            message.setText("Hello " + order.getFirstName() + ",\n\nYour Order Status has been Changed to!\n\n" + newStatus + "\n\n Best Regards,\nTeam");
-            mail_sender.send(message);
-            return orders_repository.save(order);
-        }).orElseThrow(() -> new RuntimeException("Order not found"));
+            message.setText("Hello " + order.getFirstName() + ",\n\nYour Order Status has been changed to: " + newStatus + "\n\nBest Regards,\nTeam");
+
+            mailSender.send(message);
+            return OrderMapper.mapToOrderdto(order);
+        }
     }
 
     @Override
     public OrderDto viewOrder(Long id) {
-        Optional<Orders> existingOrderOpt = orders_repository.findById(id);
+        Optional<Orders> existingOrderOpt = orderRepository.findById(id);
         if (existingOrderOpt.isPresent()) {
             Orders existingOrder = existingOrderOpt.get();
             OrderDto order = OrderMapper.mapToOrderdto(existingOrder);
             String storedEmail = order.getEmail();
             String signedInEmail = getAuthenticatedUserEmail();
             if (!storedEmail.equals(signedInEmail)) {
-                throw new RuntimeException("You have no order with id:" + id );
-            }else{
+                throw new RuntimeException("You have no order with id:" + id);
+            } else {
                 return order;
             }
-        }else{
+        } else {
             throw new RuntimeException("Order with Id " + id + " not found.");
         }
     }

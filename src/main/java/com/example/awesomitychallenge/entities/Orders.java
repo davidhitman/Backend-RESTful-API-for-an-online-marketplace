@@ -21,8 +21,10 @@ public class Orders {
     @Column(name = "product_name")
     private String productName;
 
-    @Column(name = "category")
-    private String category;
+
+    @Column(name = "category", nullable = false)
+    private Category category;
+
 
     @Column(name = "quantity")
     private int quantity;
@@ -42,7 +44,7 @@ public class Orders {
     @Column(name = "address")
     private String address;
 
-    @Column(name="order_status")
+    @Column(name = "order_status")
     private String orderStatus;
 
 }

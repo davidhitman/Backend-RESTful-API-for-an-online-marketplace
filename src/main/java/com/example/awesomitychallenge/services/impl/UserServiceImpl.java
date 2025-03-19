@@ -22,69 +22,60 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 
 @Service
 @AllArgsConstructor
-public  class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService {
 
     private final JwtService jwtService;
     // private variables to be used
-    private UserRepository users_repository;
-    private JavaMailSender mail_sender;
+    private UserRepository userRepository;
+    private JavaMailSender mailSender;
     private PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
 
     @Override
-    public boolean userSignUp(CreateUserDto userDto) {
+    public UserDto userSignUp(CreateUserDto userDto) {
 
         Users user = UserMapper.map(userDto);
         SimpleMailMessage message = new SimpleMailMessage();
-        Optional<Users> existingUser = users_repository.findByEmail(user.getEmail());
+        Optional<Users> existingUser = userRepository.findByEmail(user.getEmail());
 
         if (existingUser.isEmpty()) {
             String encodePassword = passwordEncoder.encode(user.getPassword());
             user.setPassword(encodePassword);
-            users_repository.save(user);
+            userRepository.save(user);
             message.setTo(user.getEmail());
             message.setSubject("Thanks For Signing Up");
             message.setText("Hello " + user.getFirstName() + ",\n\nThank you for registering!\n\nBest Regards,\nTeam");
-            mail_sender.send(message);
-            return true;
-        }else{
-            return false;
+            mailSender.send(message);
+            return UserMapper.map(user);
+        } else {
+            throw new RuntimeException("User already exists");
         }
     }
 
     @Override
     public AuthenticationResponse login(String email, String password) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        email,
-                        password
-                )
-        );
-        var user = users_repository.findByEmail(email).orElse(null);
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        var user = userRepository.findByEmail(email).orElse(null);
         var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
-                .build();
+        return AuthenticationResponse.builder().token(jwtToken).build();
     }
 
     @Override
     @Transactional
     public void deleteUser(Long id) {
-        Optional<Users> getUser = users_repository.findById(id);
-        getUser.ifPresent(users -> users_repository.delete(users));
+        Optional<Users> getUser = userRepository.findById(id);
+        getUser.ifPresent(users -> userRepository.delete(users));
     }
 
     @Override
-    public void updateUser(Long id, UpdateUserDto users) {
-        Optional<Users> existingUser = users_repository.findById(id);
+    public UserDto updateUser(Long id, UpdateUserDto users) {
+        Optional<Users> existingUser = userRepository.findById(id);
         String encodePassword = passwordEncoder.encode(users.getPassword());
         users.setPassword(encodePassword);
         if (existingUser.isPresent()) {
@@ -95,42 +86,36 @@ public  class UserServiceImpl implements UserService {
             user.setPassword(users.getPassword());
             user.setPhoneNumber(users.getPhoneNumber());
             user.setAddress(users.getAddress());
-            users_repository.save(user);
+            userRepository.save(user);
+            return UserMapper.map(user);
         } else {
             throw new RuntimeException("User with email " + id + " not found.");
-            }
-
-    }
-    @Override
-    public List<UserDto> viewAllUsers(int page, int size) {
-
-        var usersPage = users_repository.findAllUsers(PageRequest.of(page, size));
-        var retrievedUsers = usersPage.getContent();
-        List<UserDto> users = new ArrayList<>();
-        for (Users retrievedUser : retrievedUsers) {
-            var user = UserMapper.map(retrievedUser);
-            users.add(user);
         }
-        return(users);
+
     }
 
     @Override
-    public boolean adminSignUp(CreateAdminDto adminDto){
+    public Page<Users> viewAllUsers(int offset, int pageSize) {
+        return userRepository.findAllUsers(PageRequest.of(offset, pageSize));
+    }
+
+    @Override
+    public UserDto adminSignUp(CreateAdminDto adminDto) {
         Users user = UserMapper.map(adminDto);
         SimpleMailMessage messages = new SimpleMailMessage();
-        Optional<Users> existingUser = users_repository.findByEmail(user.getEmail());
+        Optional<Users> existingUser = userRepository.findByEmail(user.getEmail());
 
         if (existingUser.isEmpty() || existingUser.get().getRole().equals(Role.USER)) {
             String encodePassword = passwordEncoder.encode(user.getPassword());
             user.setPassword(encodePassword);
-            users_repository.save(user);
+            userRepository.save(user);
             messages.setTo(user.getEmail());
             messages.setSubject("Thanks For Signing Up");
             messages.setText("Hello " + user.getFirstName() + ",\n\nThank you for registering!\n\n You Have been Registered as an Admin\n\n Best Regards,\nTeam");
-            mail_sender.send(messages);
-            return true;
-        }else{
-            return false;
+            mailSender.send(messages);
+            return UserMapper.map(user);
+        } else {
+            throw new RuntimeException("Admin already exists");
         }
     }
 }

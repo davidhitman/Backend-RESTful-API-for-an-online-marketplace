@@ -8,13 +8,17 @@ import com.example.awesomitychallenge.entities.AuthenticationResponse;
 import com.example.awesomitychallenge.entities.Users;
 import org.springframework.data.domain.Page;
 
-import java.util.List;
 
 public interface UserService {
-    boolean userSignUp(CreateUserDto userDto);
+    UserDto userSignUp(CreateUserDto userDto);
+
     AuthenticationResponse login(String email, String password);
+
     void deleteUser(Long id);
-    void updateUser(Long id, UpdateUserDto updatedUser);
-    List<UserDto> viewAllUsers(int page, int size);
-    boolean adminSignUp(CreateAdminDto userDto);
+
+    UserDto updateUser(Long id, UpdateUserDto updatedUser);
+
+    Page<Users> viewAllUsers(int offset, int pageSize);
+
+    UserDto adminSignUp(CreateAdminDto userDto);
 }

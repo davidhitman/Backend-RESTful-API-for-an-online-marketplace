@@ -1,6 +1,7 @@
 package com.example.awesomitychallenge.controllers;
 
 import com.example.awesomitychallenge.dto.CreateAdminDto;
+import com.example.awesomitychallenge.dto.UserDto;
 import com.example.awesomitychallenge.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,12 +21,8 @@ public class AdminController {
     @Operation(summary = "Admin Sign Up", description = "Registers a new Admin in the system")
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
-    public ResponseEntity<String> adminSignUp(@RequestBody CreateAdminDto adminDto){
+    public ResponseEntity<GenericResponse<UserDto>> adminSignUp(@RequestBody CreateAdminDto adminDto) {
         var adminSignup = userService.adminSignUp(adminDto);
-        if (adminSignup){
-            return ResponseEntity.ok("Email Registered Successfully!");
-        }else{
-            return ResponseEntity.ok("Email Already registered as Admin");
-        }
+        return ResponseEntity.ok(new GenericResponse<>("Admin Registered successfully", adminSignup));
     }
 }
