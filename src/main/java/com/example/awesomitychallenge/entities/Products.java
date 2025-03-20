@@ -3,6 +3,8 @@ package com.example.awesomitychallenge.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,19 +26,24 @@ public class Products {
     @Column(name = "quantity")
     private int quantity;
 
-    @ManyToOne
-    @JoinColumn(name = "category", nullable = false)
-    private Category category;
-
-
     @Column(name = "featured")
     private boolean featured;
 
+    // Many Products belong to one Category
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
-    public Products(String productName, Long price, int quantity, boolean featured) {
+    // One Product can have multiple Orders
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Orders> orders;
+
+
+    public Products(String productName, Long price, int quantity, boolean featured, Category category) {
         this.productName = productName;
         this.price = price;
         this.quantity = quantity;
         this.featured = featured;
+        this.category = category;
     }
 }

@@ -24,6 +24,6 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<GenericResponse<String>> addCategory(@RequestParam String category) {
         categoryService.addCategory(category);
-        return ResponseEntity.ok(new GenericResponse<>("Category added successfully", "Category added" + category));
+        return ResponseEntity.ok(new GenericResponse<>("Category added successfully", "The category added is:" + category));
     }
 }

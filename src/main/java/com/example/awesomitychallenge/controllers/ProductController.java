@@ -35,7 +35,7 @@ public class ProductController {
     @DeleteMapping("/{id}")
     public ResponseEntity<GenericResponse<String>> deleteProduct(@PathVariable Long id) {
         product_service.deleteProduct(id);
-        return ResponseEntity.ok(new GenericResponse<>("Product deleted successfully", "Deleted ID" + id));
+        return ResponseEntity.ok(new GenericResponse<>("Product deleted successfully", "Deleted ID:" + id));
     }
 
     @Operation(summary = "View all Products", description = "Allow Admins to view all stored products")
@@ -51,7 +51,7 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<GenericResponse<ProductDto>> viewProduct(@PathVariable Long id) {
         ProductDto product = product_service.viewProduct(id);
-        return ResponseEntity.ok(new GenericResponse<>("The product with id" + id + "is:", product));
+        return ResponseEntity.ok(new GenericResponse<>("The product with id:"+ " " + id +" "+ "is:", product));
 
     }
 

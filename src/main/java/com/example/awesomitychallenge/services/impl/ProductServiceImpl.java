@@ -24,11 +24,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDto registerProduct(CreateProductDto productDto) {
         Long categoryId = productDto.getCategoryId();
-        var category = categoryRepository.findCategoryById(categoryId);
-        boolean exists = productRepository.existsByProductNameAndCategoryAndPrice(productDto.getProductName(), category.getCategory(), productDto.getPrice());
+        var category = categoryRepository.findCategoryById(categoryId).orElseThrow(() -> new RuntimeException("Category not found"));
+        boolean exists = productRepository.existsByProductNameAndCategoryAndPrice(productDto.getProductName(), category.getId(), productDto.getPrice());
         if (!exists) {
-            Products product = ProductMapper.map(productDto);
-            product.setCategory(category);
+            Products product = ProductMapper.map(productDto, category);
             productRepository.save(product);
             return ProductMapper.map(product);
         } else {
@@ -73,13 +72,14 @@ public class ProductServiceImpl implements ProductService {
     public Products updateProduct(Long Id, UpdateProductDto updatedProduct) {
         var existingProduct = productRepository.findById(Id);
         var categoryId = updatedProduct.getCategoryId();
-        var category = categoryRepository.findCategoryById(categoryId);
+        var categories = categoryRepository.findCategoryById(categoryId);
+        categories.orElseThrow(() -> new RuntimeException("Category not found"));
         if (existingProduct.isPresent()) {
             var product = existingProduct.get();
             product.setProductName(updatedProduct.getProductName());
             product.setPrice(updatedProduct.getPrice());
             product.setQuantity(updatedProduct.getQuantity());
-            product.setCategory(category);
+            product.setCategory(categories.get());
             return productRepository.save(product);
         } else {
             throw new RuntimeException("Product with name " + Id + " not found.");

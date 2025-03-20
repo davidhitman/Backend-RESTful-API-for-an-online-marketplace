@@ -45,6 +45,10 @@ public class Users implements UserDetails { //
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    // One User can have multiple Orders
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Orders> orders;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

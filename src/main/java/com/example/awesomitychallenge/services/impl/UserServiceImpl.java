@@ -4,7 +4,6 @@ import com.example.awesomitychallenge.dto.CreateAdminDto;
 import com.example.awesomitychallenge.dto.CreateUserDto;
 import com.example.awesomitychallenge.dto.UpdateUserDto;
 import com.example.awesomitychallenge.dto.UserDto;
-import com.example.awesomitychallenge.entities.AuthenticationResponse;
 import com.example.awesomitychallenge.entities.Role;
 import com.example.awesomitychallenge.entities.Users;
 import com.example.awesomitychallenge.mapper.UserMapper;
@@ -59,11 +58,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AuthenticationResponse login(String email, String password) {
+    public String login(String email, String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         var user = userRepository.findByEmail(email).orElse(null);
-        var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        return jwtService.generateToken(user);
     }
 
     @Override

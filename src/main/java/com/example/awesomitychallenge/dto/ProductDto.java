@@ -21,5 +21,5 @@ public class ProductDto {
 
     private boolean featured;
 
-    private Category category;
+    private String category;
 }

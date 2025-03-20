@@ -5,26 +5,14 @@ import com.example.awesomitychallenge.controllers.OrderController;
 import com.example.awesomitychallenge.controllers.ProductController;
 import com.example.awesomitychallenge.controllers.UserController;
 import com.example.awesomitychallenge.dto.CreateProductDto;
-import com.example.awesomitychallenge.dto.OrderDto;
 import com.example.awesomitychallenge.dto.UserDto;
-import com.example.awesomitychallenge.entities.AuthenticationResponse;
 import com.example.awesomitychallenge.services.OrderService;
-import com.example.awesomitychallenge.services.ProductService;
 import com.example.awesomitychallenge.services.UserService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
-
-import java.util.Map;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)

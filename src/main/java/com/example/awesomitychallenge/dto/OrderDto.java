@@ -16,7 +16,7 @@ public class OrderDto {
 
     private String productName;
 
-    private Category category;
+    private String category;
 
     private int quantity;
 
@@ -31,4 +31,6 @@ public class OrderDto {
     private String address;
 
     private String orderStatus;
+
+    private Long price;
 }

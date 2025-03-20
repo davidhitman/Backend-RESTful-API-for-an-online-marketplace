@@ -43,7 +43,7 @@ public class OrderController {
     @DeleteMapping("/{id}")
     public ResponseEntity<GenericResponse<String>> deleteOrder(@PathVariable Long id) {
         orderService.deleteOrderById(id);
-        return ResponseEntity.ok(new GenericResponse<>("Order deleted successfully", "Deleted ID" + id));
+        return ResponseEntity.ok(new GenericResponse<>("Order deleted successfully", "Deleted ID:" +" "+ id));
     }
 
     @Operation(summary = "view order by id", description = "Allows Users to view one order by the order id")

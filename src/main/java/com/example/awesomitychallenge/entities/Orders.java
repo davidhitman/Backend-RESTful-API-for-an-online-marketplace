@@ -21,10 +21,8 @@ public class Orders {
     @Column(name = "product_name")
     private String productName;
 
-
-    @Column(name = "category", nullable = false)
-    private Category category;
-
+    @Column(name = "category")
+    private String category;
 
     @Column(name = "quantity")
     private int quantity;
@@ -46,5 +44,18 @@ public class Orders {
 
     @Column(name = "order_status")
     private String orderStatus;
+
+    @Column(name="price")
+    private Long price;
+
+    // Many Orders belong to one User
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private Users user;
+
+    // Many Orders belong to one Product
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Products product;
 
 }

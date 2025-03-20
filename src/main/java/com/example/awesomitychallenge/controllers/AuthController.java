@@ -3,7 +3,6 @@ package com.example.awesomitychallenge.controllers;
 import com.example.awesomitychallenge.dto.CreateUserDto;
 import com.example.awesomitychallenge.dto.LoginDto;
 import com.example.awesomitychallenge.dto.UserDto;
-import com.example.awesomitychallenge.entities.AuthenticationResponse;
 import com.example.awesomitychallenge.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -36,10 +35,10 @@ public class AuthController {
     @Operation(summary = "User Login", description = "Allows users to log in and receive authentication token")
     @PostMapping("/login")
     @SecurityRequirement(name = "none")
-    public ResponseEntity<GenericResponse<AuthenticationResponse>> login(@RequestBody LoginDto credentials) {
+    public ResponseEntity<GenericResponse<String>> login(@RequestBody LoginDto credentials) {
         String email = credentials.getEmail();
         String password = credentials.getPassword();
         var token = userService.login(email, password);
-        return ResponseEntity.ok(new GenericResponse<>("token", token));
+        return ResponseEntity.ok(new GenericResponse<>("token to be used to login", token));
     }
 }

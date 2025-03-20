@@ -56,7 +56,8 @@ public class OrderServiceImpl implements OrderService {
                     order.setFirstName(user.getFirstName());
                     order.setLastName(user.getLastName());
                     order.setEmail(email);
-                    order.setCategory(product.getCategory());
+                    order.setPrice(product.getPrice());
+                    order.setCategory(product.getCategory().getCategory());
                     order.setPhoneNumber(user.getPhoneNumber());
                     order.setAddress(user.getAddress());
                     order.setOrderStatus("Order Placed");
@@ -105,7 +106,7 @@ public class OrderServiceImpl implements OrderService {
                     product.setQuantity(product.getQuantity() + difference);
                     productRepository.save(product);
                     orderRepository.save(existingOrder);
-                } else if (quantity > existingOrder.getQuantity()) {
+                } else if (quantity > existingOrder.getQuantity() && quantity != 0) {
                     if (product.getQuantity() >= quantity) {
                         var difference = quantity - existingOrder.getQuantity();
                         existingOrder.setQuantity(quantity);
@@ -116,7 +117,7 @@ public class OrderServiceImpl implements OrderService {
                         throw new RuntimeException("Insufficient product quantity available");
                     }
                 } else if (quantity == 0) {
-                    deleteOrderById(id);
+                    deleteOrderById(id); // display message that the product has been deleted
                 } else {
                     throw new RuntimeException("You have not made any changes");
                 }

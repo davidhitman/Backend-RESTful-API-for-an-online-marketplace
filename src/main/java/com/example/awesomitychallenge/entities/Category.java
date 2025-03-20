@@ -24,6 +24,7 @@ public class Category {
     @Column(name = "name")
     private String category;
 
+    // One Category can have multiple Products
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Products> products;
 }
