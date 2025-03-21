@@ -48,8 +48,9 @@ public class OrderServiceImpl implements OrderService {
         Optional<Users> usersOptional = userRepository.findByEmail(email);
         if (usersOptional.isPresent()) {
             Users user = usersOptional.get();
-            Products product = productRepository.findByProductName(productName);
-            if (product != null) {
+            var products = productRepository.findByProductName(productName);
+            if (products.isPresent()) {
+                var product = products.get();
                 if (product.getQuantity() > quantity) {
                     order.setProductName(productName);
                     order.setQuantity(quantity);
@@ -57,7 +58,7 @@ public class OrderServiceImpl implements OrderService {
                     order.setLastName(user.getLastName());
                     order.setEmail(email);
                     order.setPrice(product.getPrice());
-                    order.setCategory(product.getCategory().getCategory());
+                    order.setCategory(product.getCategory().getName());
                     order.setPhoneNumber(user.getPhoneNumber());
                     order.setAddress(user.getAddress());
                     order.setOrderStatus("Order Placed");
@@ -96,7 +97,8 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderDto updateOrder(Long id, String product_name, int quantity) {
         Optional<Orders> existingOrderOpt = orderRepository.findById(id);
-        Products product = productRepository.findByProductName(product_name);
+        var products = productRepository.findByProductName(product_name);
+        var product = products.get();
         if (existingOrderOpt.isPresent()) {
             Orders existingOrder = existingOrderOpt.get();
             if (existingOrder.getProductName().equals(product_name)) {

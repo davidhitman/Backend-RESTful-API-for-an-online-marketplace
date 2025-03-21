@@ -1,11 +1,15 @@
 package com.example.awesomitychallenge.controllers;
 
+import com.example.awesomitychallenge.dto.RatingDto;
 import com.example.awesomitychallenge.dto.UpdateUserDto;
 import com.example.awesomitychallenge.dto.UserDto;
+import com.example.awesomitychallenge.entities.ProductRatings;
 import com.example.awesomitychallenge.entities.Users;
+import com.example.awesomitychallenge.services.ProductRatingService;
 import com.example.awesomitychallenge.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private UserService userService;
+    private ProductRatingService productRatingService;
 
     @Operation(summary = "Delete User", description = "Allow Admins to delete Users")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -33,7 +38,7 @@ public class UserController {
     @Operation(summary = "Update User", description = "Allows Admin to Update Users")
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<GenericResponse<UserDto>> updateUser(@PathVariable Long id, @RequestBody UpdateUserDto user) {
+    public ResponseEntity<GenericResponse<UserDto>> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateUserDto user) {
         var updatedUser = userService.updateUser(id, user);
         return ResponseEntity.ok(new GenericResponse<>("User Updated Successfully!", updatedUser));
     }
@@ -45,6 +50,16 @@ public class UserController {
         Page<Users> users = userService.viewAllUsers(offset, pageSize);
         return ResponseEntity.ok(new GenericResponse<>("All Stored users", users));
     }
+
+    @Operation(summary = "Rate products", description = "Review and rate previously ordered products")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+    @PostMapping
+    public ResponseEntity<GenericResponse<ProductRatings>> rateProducts(@RequestBody RatingDto ratingDto) {
+        var rate = productRatingService.rateProduct(ratingDto);
+        return ResponseEntity.ok(new GenericResponse<>("The Product Rating", rate));
+    }
+
+
 
 }
 

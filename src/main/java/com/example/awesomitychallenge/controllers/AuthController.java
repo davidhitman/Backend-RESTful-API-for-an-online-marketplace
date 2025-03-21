@@ -7,6 +7,7 @@ import com.example.awesomitychallenge.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +28,7 @@ public class AuthController {
     @Operation(summary = "User Sign Up", description = "Registers a new user in the system")
     @PostMapping
     @SecurityRequirement(name = "none")
-    public ResponseEntity<GenericResponse<UserDto>> userSignUp(@RequestBody CreateUserDto userDto) {
+    public ResponseEntity<GenericResponse<UserDto>> userSignUp(@Valid @RequestBody CreateUserDto userDto) {
         var userSignup = userService.userSignUp(userDto);
         return ResponseEntity.ok(new GenericResponse<>("User Registered successfully", userSignup));
     }
@@ -35,7 +36,7 @@ public class AuthController {
     @Operation(summary = "User Login", description = "Allows users to log in and receive authentication token")
     @PostMapping("/login")
     @SecurityRequirement(name = "none")
-    public ResponseEntity<GenericResponse<String>> login(@RequestBody LoginDto credentials) {
+    public ResponseEntity<GenericResponse<String>> login(@Valid @RequestBody LoginDto credentials) {
         String email = credentials.getEmail();
         String password = credentials.getPassword();
         var token = userService.login(email, password);

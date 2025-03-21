@@ -51,7 +51,15 @@ public class ApplicationConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        return new OpenAPI().info(new Info().title("Awesomity Challenge API Documentation").description("API documentation for Awesomity Challenge, covering authentication, orders, products, and user management.")).security(Collections.singletonList(new SecurityRequirement().addList("BearerAuth"))).components(new io.swagger.v3.oas.models.Components().addSecuritySchemes("BearerAuth", new SecurityScheme().name("bearerAuth").type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")));
+        return new OpenAPI().info(new Info()
+                .title("Awesomity Challenge API Documentation").
+                description("API documentation for Awesomity Challenge, covering authentication, orders, products, and user management."))
+                .security(Collections.singletonList(new SecurityRequirement()
+                        .addList("BearerAuth")))
+                .components(new io.swagger.v3.oas.models.Components()
+                        .addSecuritySchemes("BearerAuth", new SecurityScheme()
+                                .name("bearerAuth").type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer").bearerFormat("JWT")));
     }
 
 }

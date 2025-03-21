@@ -1,7 +1,6 @@
 package com.example.awesomitychallenge.dto;
 
 
-import com.example.awesomitychallenge.entities.Category;
 import lombok.*;
 
 @Getter

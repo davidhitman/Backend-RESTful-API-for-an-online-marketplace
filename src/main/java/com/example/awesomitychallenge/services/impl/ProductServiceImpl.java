@@ -3,6 +3,7 @@ package com.example.awesomitychallenge.services.impl;
 import com.example.awesomitychallenge.dto.CreateProductDto;
 import com.example.awesomitychallenge.dto.ProductDto;
 import com.example.awesomitychallenge.dto.UpdateProductDto;
+import com.example.awesomitychallenge.entities.Category;
 import com.example.awesomitychallenge.entities.Products;
 import com.example.awesomitychallenge.mapper.ProductMapper;
 import com.example.awesomitychallenge.repositories.CategoryRepository;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 
 @Service
@@ -48,11 +51,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<Products> viewAllProducts(String categorySearch, int page, int size) {
-        if (categorySearch != null && !categorySearch.isEmpty()) {
-            return productRepository.findByCategory(categorySearch, PageRequest.of(page, size));
-
-
+    public Page<Products> viewAllProducts(String categoryName, int page, int size) {
+        if (categoryName != null && !categoryName.isEmpty()) {
+            Optional<Category> categoryOpt = categoryRepository.findByName(categoryName);
+            if (categoryOpt.isPresent()) {
+                return productRepository.findByCategory(categoryOpt.get(), PageRequest.of(page, size));
+            } else{
+                throw new RuntimeException("Category not found.");
+            }
         } else {
             return productRepository.findAll(PageRequest.of(page, size));
         }

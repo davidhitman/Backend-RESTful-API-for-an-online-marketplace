@@ -49,6 +49,9 @@ public class Users implements UserDetails { //
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Orders> orders;
 
+    public Long getUserId(){
+        return id;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

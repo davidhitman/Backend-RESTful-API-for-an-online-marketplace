@@ -7,6 +7,7 @@ import com.example.awesomitychallenge.entities.Products;
 import com.example.awesomitychallenge.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class ProductController {
     @Operation(summary = "Add product", description = "Allow Admins to add products")
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
-    public ResponseEntity<GenericResponse<ProductDto>> registerProduct(@RequestBody CreateProductDto productDto) {
+    public ResponseEntity<GenericResponse<ProductDto>> registerProduct(@Valid @RequestBody CreateProductDto productDto) {
         ProductDto product = product_service.registerProduct(productDto);
         return ResponseEntity.ok(new GenericResponse<>("Product Successfully Registered", product));
     }
@@ -58,7 +59,7 @@ public class ProductController {
     @Operation(summary = "Update product", description = "Allow Admins to Update products")
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<GenericResponse<Products>> updateProduct(@PathVariable Long id, @RequestBody UpdateProductDto product) {
+    public ResponseEntity<GenericResponse<Products>> updateProduct(@PathVariable Long id, @Valid @RequestBody UpdateProductDto product) {
         var updatedProduct = product_service.updateProduct(id, product);
         return ResponseEntity.ok(new GenericResponse<>("Product updated successfully", updatedProduct));
     }

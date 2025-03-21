@@ -3,6 +3,7 @@ package com.example.awesomitychallenge.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -37,6 +38,9 @@ public class Products {
     // One Product can have multiple Orders
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Orders> orders;
+
+    @OneToMany (mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductRatings> productRatings = new ArrayList<>();
 
 
     public Products(String productName, Long price, int quantity, boolean featured, Category category) {

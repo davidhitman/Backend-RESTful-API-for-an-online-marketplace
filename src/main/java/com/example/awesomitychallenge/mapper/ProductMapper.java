@@ -8,7 +8,7 @@ import com.example.awesomitychallenge.entities.Products;
 
 public class ProductMapper {
     public static ProductDto map(Products products) {
-        return new ProductDto(products.getId(), products.getProductName(), products.getPrice(), products.getQuantity(), products.isFeatured(), products.getCategory().getCategory());
+        return new ProductDto(products.getId(), products.getProductName(), products.getPrice(), products.getQuantity(), products.isFeatured(), products.getCategory().getName());
     }
 
     public static Products map(CreateProductDto productDto, Category category) {

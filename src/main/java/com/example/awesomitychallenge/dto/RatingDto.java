@@ -13,16 +13,15 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class UpdateProductDto {
-    @NotBlank(message = "Product Name cannot be blank")
+public class RatingDto {
+
+    @NotBlank(message = "ProductId cannot be blank")
     private String productName;
 
-    @NotNull(message = "Price cannot be blank")
-    private Long price;
+    @NotNull(message = "OrderId cannot be blank")
+    private Long orderId;
 
-    @NotNull(message = "Quantity cannot be blank")
-    private int quantity;
+    @NotNull(message="ratings cannot be blank")
+    private Integer rating;
 
-    @NotNull(message = "Category Id cannot be blank")
-    private Long categoryId;
 }

@@ -22,7 +22,29 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(auth -> auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll().requestMatchers("/auth/**").permitAll().requestMatchers("/users/{email}").hasAuthority("ADMIN").requestMatchers("/users").hasAuthority("ADMIN").requestMatchers("/users/search/{category}").hasAnyAuthority("ADMIN", "USERS").requestMatchers("/admin/**").hasAuthority("ADMIN").requestMatchers("/products/{id}").hasAuthority("ADMIN").requestMatchers("/products/{id}/featured").hasAuthority("ADMIN").requestMatchers("/products").hasAnyAuthority("ADMIN", "USERS").requestMatchers("/orders").hasAnyAuthority("ADMIN", "USER").requestMatchers("/orders/{email}").hasAnyAuthority("ADMIN", "USER").requestMatchers("/orders/{orderId}/status").hasAnyAuthority("ADMIN", "USER").requestMatchers("/orders/{id}").hasAuthority("ADMIN").requestMatchers("/orders/{orderId}/status").hasAuthority("ADMIN").anyRequest().authenticated()).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authenticationProvider(authenticationProvider).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        http.csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/v3/api-docs/**","/v2/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**")
+                        .permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/users/{email}").hasAuthority("ADMIN")
+                        .requestMatchers("/users").hasAuthority("ADMIN")
+                        .requestMatchers("/users/search/{category}").hasAnyAuthority("ADMIN", "USERS")
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/products/{id}").hasAuthority("ADMIN")
+                        .requestMatchers("/products/{id}/featured").hasAuthority("ADMIN")
+                        .requestMatchers("/products").hasAnyAuthority("ADMIN", "USERS")
+                        .requestMatchers("/orders").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers("/orders/{email}").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers("/orders/{orderId}/status").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers("/orders/{id}").hasAuthority("ADMIN")
+                        .requestMatchers("/orders/{orderId}/status").hasAuthority("ADMIN")
+                        .anyRequest()
+                        .authenticated())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

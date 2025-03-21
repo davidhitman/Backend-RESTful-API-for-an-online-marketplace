@@ -5,6 +5,7 @@ import com.example.awesomitychallenge.dto.UserDto;
 import com.example.awesomitychallenge.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +22,7 @@ public class AdminController {
     @Operation(summary = "Admin Sign Up", description = "Registers a new Admin in the system")
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
-    public ResponseEntity<GenericResponse<UserDto>> adminSignUp(@RequestBody CreateAdminDto adminDto) {
+    public ResponseEntity<GenericResponse<UserDto>> adminSignUp(@Valid @RequestBody CreateAdminDto adminDto) {
         var adminSignup = userService.adminSignUp(adminDto);
         return ResponseEntity.ok(new GenericResponse<>("Admin Registered successfully", adminSignup));
     }
