@@ -39,7 +39,7 @@ public class Products {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Orders> orders;
 
-    @OneToMany (mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany (mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductRatings> productRatings = new ArrayList<>();
 
 

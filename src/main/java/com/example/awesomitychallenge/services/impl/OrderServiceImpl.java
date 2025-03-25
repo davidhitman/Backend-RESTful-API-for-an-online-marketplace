@@ -5,33 +5,32 @@ package com.example.awesomitychallenge.services.impl;
 
 import com.example.awesomitychallenge.dto.OrderDto;
 import com.example.awesomitychallenge.entities.Orders;
-import com.example.awesomitychallenge.entities.Products;
-import com.example.awesomitychallenge.entities.Users;
 import com.example.awesomitychallenge.mapper.OrderMapper;
+import com.example.awesomitychallenge.mapper.UserMapper;
 import com.example.awesomitychallenge.repositories.OrderRepository;
 import com.example.awesomitychallenge.repositories.ProductRepository;
 import com.example.awesomitychallenge.repositories.UserRepository;
-import com.example.awesomitychallenge.services.JwtService;
 import com.example.awesomitychallenge.services.OrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class OrderServiceImpl implements OrderService {
-    private OrderRepository orderRepository;
-    private ProductRepository productRepository;
-    private UserRepository userRepository;
-    private JavaMailSender mailSender;
+    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final JavaMailSender mailSender;
+    private final KafkaTemplate<String, OrderDto> kafkaTemplate;
 
     public String getAuthenticatedUserEmail() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -43,33 +42,18 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto placeOrders(String productName, int quantity) {
-        Orders order = new Orders();
-        var email = getAuthenticatedUserEmail();
-        Optional<Users> usersOptional = userRepository.findByEmail(email);
+        String email = getAuthenticatedUserEmail();
+        var usersOptional = userRepository.findByEmail(email);
+        var products = productRepository.findByProductName(productName);
+
         if (usersOptional.isPresent()) {
-            Users user = usersOptional.get();
-            var products = productRepository.findByProductName(productName);
             if (products.isPresent()) {
-                var product = products.get();
-                if (product.getQuantity() > quantity) {
-                    order.setProductName(productName);
-                    order.setQuantity(quantity);
-                    order.setFirstName(user.getFirstName());
-                    order.setLastName(user.getLastName());
-                    order.setEmail(email);
-                    order.setPrice(product.getPrice());
-                    order.setCategory(product.getCategory().getName());
-                    order.setPhoneNumber(user.getPhoneNumber());
-                    order.setAddress(user.getAddress());
-                    order.setOrderStatus("Order Placed");
-                    orderRepository.save(order);
-                    product.setQuantity(product.getQuantity() - quantity);
-                    productRepository.save(product);
-                    return OrderMapper.mapToOrderdto(order);
-                } else {
-                    throw new RuntimeException("Insufficient product quantity available");
-                }
-            } else {
+                OrderDto dto = new OrderDto(null, productName, products.get().getCategory().getName(), quantity,
+                        usersOptional.get().getFirstName(), usersOptional.get().getLastName(), email,
+                        usersOptional.get().getPhoneNumber(), usersOptional.get().getAddress(), "PENDING", products.get().getPrice());
+                kafkaTemplate.send("order-topic", dto);
+                return dto;
+            } else{
                 throw new RuntimeException("Product not found");
             }
         } else {
@@ -79,22 +63,23 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
-    public Page<Orders> viewOrderHistory(int page, int size) {
+    public Page<OrderDto> viewOrderHistory(int page, int size) {
         String email = getAuthenticatedUserEmail();
-        return orderRepository.findByEmail(email, PageRequest.of(page, size));
+        Page<Orders> orders = orderRepository.findByEmail(email, PageRequest.of(page, size));
+        return orders.map(OrderMapper::map);
     }
 
     @Override
-    @Transactional
     public void deleteOrderById(Long id) {
-        if (!orderRepository.existsById(id)) {
+        var orderOpt = orderRepository.findById(id);
+        if (orderOpt.isPresent()) {
+            orderRepository.delete(orderOpt.get());
+        }else{
             throw new RuntimeException("Order with Id " + id + " not found.");
         }
-        orderRepository.deleteById(id);
     }
 
     @Override
-    @Transactional
     public OrderDto updateOrder(Long id, String product_name, int quantity) {
         Optional<Orders> existingOrderOpt = orderRepository.findById(id);
         var products = productRepository.findByProductName(product_name);
@@ -109,7 +94,7 @@ public class OrderServiceImpl implements OrderService {
                     productRepository.save(product);
                     orderRepository.save(existingOrder);
                 } else if (quantity > existingOrder.getQuantity() && quantity != 0) {
-                    if (product.getQuantity() >= quantity) {
+                    if ((product.getQuantity() + existingOrder.getQuantity()) >= quantity) {
                         var difference = quantity - existingOrder.getQuantity();
                         existingOrder.setQuantity(quantity);
                         product.setQuantity(product.getQuantity() - difference);
@@ -119,11 +104,11 @@ public class OrderServiceImpl implements OrderService {
                         throw new RuntimeException("Insufficient product quantity available");
                     }
                 } else if (quantity == 0) {
-                    deleteOrderById(id); // display message that the product has been deleted
+                    orderRepository.deleteById(id);
                 } else {
                     throw new RuntimeException("You have not made any changes");
                 }
-                return OrderMapper.mapToOrderdto(existingOrder);
+                return OrderMapper.map(existingOrder);
             } else {
                 throw new RuntimeException("The Product with name" + product_name + " does not match your order");
             }
@@ -148,7 +133,7 @@ public class OrderServiceImpl implements OrderService {
             message.setText("Hello " + order.getFirstName() + ",\n\nYour Order Status has been changed to: " + newStatus + "\n\nBest Regards,\nTeam");
 
             mailSender.send(message);
-            return OrderMapper.mapToOrderdto(order);
+            return OrderMapper.map(order);
         }
     }
 
@@ -157,7 +142,7 @@ public class OrderServiceImpl implements OrderService {
         Optional<Orders> existingOrderOpt = orderRepository.findById(id);
         if (existingOrderOpt.isPresent()) {
             Orders existingOrder = existingOrderOpt.get();
-            OrderDto order = OrderMapper.mapToOrderdto(existingOrder);
+            OrderDto order = OrderMapper.map(existingOrder);
             String storedEmail = order.getEmail();
             String signedInEmail = getAuthenticatedUserEmail();
             if (!storedEmail.equals(signedInEmail)) {

@@ -32,19 +32,22 @@ public class ProductRatingServiceImpl implements ProductRatingService {
 
 
     @Override
-    public ProductRatings rateProduct(RatingDto productRatings) {
+    public RatingDto rateProduct(RatingDto productRatings) {
         var userId = getAuthenticatedUserId();
-        orderRepository.findById(productRatings.getOrderId())
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        Products products= productRepository.findByProductName(productRatings.getProductName())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
-        ProductRatings productRating = RatingMapper.map(productRatings);
-        productRating.setUserId(userId);
-        productRating.setOrderId(productRatings.getOrderId());
-        productRating.setRating(productRating.getRating());
-        productRating.setProduct(products);
-        return productRatingRepository.save(productRating);
+        var orderId = orderRepository.findById(productRatings.getOrderId());
+        var products= productRepository.findByProductName(productRatings.getProductName());
+        if (orderId.isEmpty()) {
+            throw new RuntimeException("Order does not exist");
+        }else if (products.isEmpty()) {
+            throw new RuntimeException("Product does not exist");
+        }else {
+            ProductRatings productRating = RatingMapper.map(productRatings);
+            productRating.setUserId(userId);
+            productRating.setOrderId(productRatings.getOrderId());
+            productRating.setRating(productRating.getRating());
+            productRating.setProduct(products.get());
+            productRatingRepository.save(productRating);
+            return RatingMapper.map(productRating);
+        }
     }
 }

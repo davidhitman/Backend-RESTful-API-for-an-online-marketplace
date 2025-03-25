@@ -16,8 +16,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 
 public class SecurityConfig {
+
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
+
 
 
     @Bean
@@ -27,18 +29,11 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**","/v2/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**")
                         .permitAll()
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/users/{email}").hasAuthority("ADMIN")
-                        .requestMatchers("/users").hasAuthority("ADMIN")
-                        .requestMatchers("/users/search/{category}").hasAnyAuthority("ADMIN", "USERS")
+                        .requestMatchers("/users/**").hasAnyAuthority("ADMIN", "USER")
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("/products/{id}").hasAuthority("ADMIN")
-                        .requestMatchers("/products/{id}/featured").hasAuthority("ADMIN")
-                        .requestMatchers("/products").hasAnyAuthority("ADMIN", "USERS")
-                        .requestMatchers("/orders").hasAnyAuthority("ADMIN", "USER")
-                        .requestMatchers("/orders/{email}").hasAnyAuthority("ADMIN", "USER")
-                        .requestMatchers("/orders/{orderId}/status").hasAnyAuthority("ADMIN", "USER")
-                        .requestMatchers("/orders/{id}").hasAuthority("ADMIN")
-                        .requestMatchers("/orders/{orderId}/status").hasAuthority("ADMIN")
+                        .requestMatchers("/products/**").hasAnyAuthority("ADMIN","USER")
+                        .requestMatchers("/orders/**").hasAnyAuthority("ADMIN","USER")
+                        .requestMatchers("/categories/**").hasAuthority("ADMIN")
                         .anyRequest()
                         .authenticated())
                 .sessionManagement(session -> session

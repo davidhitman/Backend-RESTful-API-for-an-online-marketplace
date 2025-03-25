@@ -4,7 +4,6 @@ import com.example.awesomitychallenge.dto.RatingDto;
 import com.example.awesomitychallenge.dto.UpdateUserDto;
 import com.example.awesomitychallenge.dto.UserDto;
 import com.example.awesomitychallenge.entities.ProductRatings;
-import com.example.awesomitychallenge.entities.Users;
 import com.example.awesomitychallenge.services.ProductRatingService;
 import com.example.awesomitychallenge.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,13 +21,13 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/users")
+@PreAuthorize("hasAuthority('ADMIN')")
 public class UserController {
 
     private UserService userService;
     private ProductRatingService productRatingService;
 
     @Operation(summary = "Delete User", description = "Allow Admins to delete Users")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<GenericResponse<String>> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
@@ -36,7 +35,6 @@ public class UserController {
     }
 
     @Operation(summary = "Update User", description = "Allows Admin to Update Users")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<GenericResponse<UserDto>> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateUserDto user) {
         var updatedUser = userService.updateUser(id, user);
@@ -44,17 +42,16 @@ public class UserController {
     }
 
     @Operation(summary = "View all Users", description = "Allows Admins to view all signed Up users")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
-    public ResponseEntity<GenericResponse<Page<Users>>> viewUsers(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "5") int pageSize) {
-        Page<Users> users = userService.viewAllUsers(offset, pageSize);
+    public ResponseEntity<GenericResponse<Page<UserDto>>> viewUsers(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "5") int pageSize) {
+        var users = userService.viewAllUsers(offset, pageSize);
         return ResponseEntity.ok(new GenericResponse<>("All Stored users", users));
     }
 
     @Operation(summary = "Rate products", description = "Review and rate previously ordered products")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
     @PostMapping
-    public ResponseEntity<GenericResponse<ProductRatings>> rateProducts(@RequestBody RatingDto ratingDto) {
+    public ResponseEntity<GenericResponse<RatingDto>> rateProducts(@RequestBody RatingDto ratingDto) {
         var rate = productRatingService.rateProduct(ratingDto);
         return ResponseEntity.ok(new GenericResponse<>("The Product Rating", rate));
     }

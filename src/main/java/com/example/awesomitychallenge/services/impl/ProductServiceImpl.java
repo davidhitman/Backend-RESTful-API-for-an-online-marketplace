@@ -4,9 +4,11 @@ import com.example.awesomitychallenge.dto.CreateProductDto;
 import com.example.awesomitychallenge.dto.ProductDto;
 import com.example.awesomitychallenge.dto.UpdateProductDto;
 import com.example.awesomitychallenge.entities.Category;
+import com.example.awesomitychallenge.entities.Orders;
 import com.example.awesomitychallenge.entities.Products;
 import com.example.awesomitychallenge.mapper.ProductMapper;
 import com.example.awesomitychallenge.repositories.CategoryRepository;
+import com.example.awesomitychallenge.repositories.OrderRepository;
 import com.example.awesomitychallenge.repositories.ProductRepository;
 import com.example.awesomitychallenge.services.ProductService;
 import lombok.AllArgsConstructor;
@@ -15,12 +17,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 
 @Service
 @AllArgsConstructor
 public class ProductServiceImpl implements ProductService {
+    private final OrderRepository orderRepository;
     private ProductRepository productRepository;
     private CategoryRepository categoryRepository;
 
@@ -38,12 +42,12 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    @Transactional
+
     @Override
     public void deleteProduct(Long Id) {
         var product = productRepository.findById(Id);
         if (product.isPresent()) {
-            productRepository.deleteById(Id);
+            productRepository.delete(product.get());
         } else {
             throw new RuntimeException("Product with Id " + Id + " not found.");
         }
@@ -51,17 +55,19 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<Products> viewAllProducts(String categoryName, int page, int size) {
+    public Page<ProductDto> viewAllProducts(String categoryName, int page, int size) {
+        Page<Products> productsPage;
         if (categoryName != null && !categoryName.isEmpty()) {
             Optional<Category> categoryOpt = categoryRepository.findByName(categoryName);
             if (categoryOpt.isPresent()) {
-                return productRepository.findByCategory(categoryOpt.get(), PageRequest.of(page, size));
-            } else{
+                productsPage = productRepository.findByCategory(categoryOpt.get(), PageRequest.of(page, size));
+            }else{
                 throw new RuntimeException("Category not found.");
             }
-        } else {
-            return productRepository.findAll(PageRequest.of(page, size));
+        }else{
+            productsPage = productRepository.findAll(PageRequest.of(page, size));
         }
+        return productsPage.map(ProductMapper::map);
     }
 
     @Override
@@ -75,29 +81,48 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Products updateProduct(Long Id, UpdateProductDto updatedProduct) {
+    public ProductDto updateProduct(Long Id, UpdateProductDto updatedProduct) {
         var existingProduct = productRepository.findById(Id);
-        var categoryId = updatedProduct.getCategoryId();
-        var categories = categoryRepository.findCategoryById(categoryId);
-        categories.orElseThrow(() -> new RuntimeException("Category not found"));
         if (existingProduct.isPresent()) {
-            var product = existingProduct.get();
-            product.setProductName(updatedProduct.getProductName());
-            product.setPrice(updatedProduct.getPrice());
-            product.setQuantity(updatedProduct.getQuantity());
-            product.setCategory(categories.get());
-            return productRepository.save(product);
+            var categoryId = updatedProduct.getCategoryId();
+            var categories = categoryRepository.findCategoryById(categoryId);
+            if (categories.isPresent()) {
+                var product = existingProduct.get();
+                product.setProductName(updatedProduct.getProductName());
+                product.setPrice(updatedProduct.getPrice());
+                product.setQuantity(updatedProduct.getQuantity());
+                product.setCategory(categories.get());
+                productRepository.save(product);
+
+                List<Orders> orders = product.getOrders();
+                for (Orders order : orders) {
+                    order.setCategory(categories.get().getName());
+                    order.setPrice(updatedProduct.getPrice());
+                    order.setProductName(updatedProduct.getProductName());
+                    order.setQuantity(updatedProduct.getQuantity());
+                    orderRepository.save(order);
+                }
+
+                return ProductMapper.map(product);
+            }else{
+                throw new RuntimeException("Category not found.");
+            }
         } else {
             throw new RuntimeException("Product with name " + Id + " not found.");
         }
     }
 
     @Override
-    public Products markAsFeatured(Long productId, boolean isFeatured) {
-        return productRepository.findById(productId).map(product -> {
+    public ProductDto markAsFeatured(Long productId, boolean isFeatured) {
+        var products = productRepository.findById(productId);
+        if (products.isPresent()) {
+            var product = products.get();
             product.setFeatured(true);
-            return productRepository.save(product);
-        }).orElseThrow(() -> new RuntimeException("Product not found"));
+            productRepository.save(product);
+            return ProductMapper.map(product);
+        }else{
+            throw new RuntimeException("Product with id " + productId + " not found.");
+        }
     }
 }
 

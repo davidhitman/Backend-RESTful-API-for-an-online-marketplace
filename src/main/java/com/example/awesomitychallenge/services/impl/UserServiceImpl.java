@@ -1,12 +1,11 @@
 package com.example.awesomitychallenge.services.impl;
 
-import com.example.awesomitychallenge.dto.CreateAdminDto;
-import com.example.awesomitychallenge.dto.CreateUserDto;
-import com.example.awesomitychallenge.dto.UpdateUserDto;
-import com.example.awesomitychallenge.dto.UserDto;
+import com.example.awesomitychallenge.dto.*;
+import com.example.awesomitychallenge.entities.Orders;
 import com.example.awesomitychallenge.entities.Role;
 import com.example.awesomitychallenge.entities.Users;
 import com.example.awesomitychallenge.mapper.UserMapper;
+import com.example.awesomitychallenge.repositories.OrderRepository;
 import com.example.awesomitychallenge.repositories.UserRepository;
 import com.example.awesomitychallenge.services.JwtService;
 import com.example.awesomitychallenge.services.UserService;
@@ -17,10 +16,14 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+
+import java.util.List;
 import java.util.Optional;
 
 
@@ -31,10 +34,18 @@ public class UserServiceImpl implements UserService {
     private final JwtService jwtService;
     // private variables to be used
     private UserRepository userRepository;
+    private OrderRepository orderRepository;
     private JavaMailSender mailSender;
     private PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
+    public String getAuthenticatedUserEmail() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            return ((UserDetails) principal).getUsername();
+        }
+        return null;
+    }
 
     @Override
     public UserDto userSignUp(CreateUserDto userDto) {
@@ -60,42 +71,63 @@ public class UserServiceImpl implements UserService {
     @Override
     public String login(String email, String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-        var user = userRepository.findByEmail(email).orElse(null);
+        var user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return jwtService.generateToken(user);
     }
 
     @Override
-    @Transactional
     public void deleteUser(Long id) {
         Optional<Users> getUser = userRepository.findById(id);
-        getUser.ifPresent(users -> userRepository.delete(users));
+        if (getUser.isPresent()) {
+            var email = getUser.get().getEmail();
+            if (email.equals(getAuthenticatedUserEmail())) {
+                throw new UsernameNotFoundException("You cannot delete a signed in user");
+            }else{
+                userRepository.deleteById(id);
+            }
+        } else{
+            throw new RuntimeException("User not found");
+        }
     }
 
     @Override
     public UserDto updateUser(Long id, UpdateUserDto users) {
         Optional<Users> existingUser = userRepository.findById(id);
-        String encodePassword = passwordEncoder.encode(users.getPassword());
-        users.setPassword(encodePassword);
         if (existingUser.isPresent()) {
             Users user = existingUser.get();
+            String encodePassword = passwordEncoder.encode(users.getPassword());
+            users.setPassword(encodePassword);
             user.setFirstName(users.getFirstName());
             user.setLastName(users.getLastName());
             user.setEmail(users.getEmail());
             user.setPassword(users.getPassword());
             user.setPhoneNumber(users.getPhoneNumber());
             user.setAddress(users.getAddress());
+            // changing user detains in orders
+            List<Orders> orders = user.getOrders();
+            for (Orders order : orders) {
+                order.setFirstName(user.getFirstName());
+                order.setLastName(user.getLastName());
+                order.setEmail(user.getEmail());
+                order.setPhoneNumber(user.getPhoneNumber());
+                order.setAddress(user.getAddress());
+                orderRepository.save(order);
+            }
             userRepository.save(user);
             return UserMapper.map(user);
         } else {
-            throw new RuntimeException("User with email " + id + " not found.");
+            throw new RuntimeException("User with id " + id + " not found.");
         }
 
     }
 
     @Override
-    public Page<Users> viewAllUsers(int offset, int pageSize) {
-        return userRepository.findAllUsers(PageRequest.of(offset, pageSize));
+    public Page<UserDto> viewAllUsers(int offset, int pageSize) {
+        Page<Users> usersPage;
+        usersPage = userRepository.findAllUsers(PageRequest.of(offset, pageSize));
+        return usersPage.map(UserMapper::map);
     }
+
 
     @Override
     public UserDto adminSignUp(CreateAdminDto adminDto) {

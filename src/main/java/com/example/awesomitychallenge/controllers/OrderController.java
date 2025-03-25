@@ -3,7 +3,6 @@
 package com.example.awesomitychallenge.controllers;
 
 import com.example.awesomitychallenge.dto.OrderDto;
-import com.example.awesomitychallenge.entities.Orders;
 import com.example.awesomitychallenge.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/orders")
-
+@PreAuthorize("hasAuthority('ADMIN')")
 public class OrderController {
     private OrderService orderService;
 
@@ -33,13 +32,12 @@ public class OrderController {
     @Operation(summary = "View Order History", description = "Allows Users and Admins to User Order History Of a particular User")
     @PreAuthorize("hasAuthority('USER')")
     @GetMapping
-    public ResponseEntity<GenericResponse<Page<Orders>>> viewOrdersHistory(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "5") int pageSize) {
-        Page<Orders> placedOrders = orderService.viewOrderHistory(offset, pageSize);
+    public ResponseEntity<GenericResponse<Page<OrderDto>>> viewOrdersHistory(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "5") int pageSize) {
+        var placedOrders = orderService.viewOrderHistory(offset, pageSize);
         return ResponseEntity.ok(new GenericResponse<>("The Order has been Placed", placedOrders));
     }
 
     @Operation(summary = "Delete Order", description = "Allows Users and Admins to delete Orders")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<GenericResponse<String>> deleteOrder(@PathVariable Long id) {
         orderService.deleteOrderById(id);
@@ -55,7 +53,6 @@ public class OrderController {
     }
 
     @Operation(summary = "Update Order", description = "Allows users and admins to update the order that was placed previously")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<GenericResponse<OrderDto>> updateOrder(@PathVariable Long id, @RequestParam String product_name, @RequestParam int quantity) {
         var order = orderService.updateOrder(id, product_name, quantity);
@@ -64,7 +61,6 @@ public class OrderController {
 
 
     @Operation(summary = "Update Order Status", description = "Allows Admins to Update the Status of the Order")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<GenericResponse<OrderDto>> updateOrderStatus(@PathVariable Long id, @RequestParam String status) {
         var updatedOrder = orderService.updateOrderStatus(id, status);

@@ -128,8 +128,12 @@ Start Docker or build the composer
 'docker compose down' - this is to shut the composer down
 
 
-Access of the Database in Docker
+Run and Access of the Database in Docker
+'docker pull postgres' - download the latest postgres sql
+run the image in docker
+'docker run -d --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -v my_pgdata:/var/lib/postgresql/data postgres'
 
+#Access the database
 'docker ps' - list of all running containers
 'docker exec -it <container_id> bash' - access the container shell
 'su - postgres' - switch to Postgres user
@@ -145,4 +149,9 @@ To build a target folder that contain a .jar file
 
 to run docker database only 
 docker composer up -d db
+
+to run Kafka in Docker
+docker pull apache/kafka:4.0.0
+docker run -p 9092:9092 apache/kafka:4.0.0
+
 

@@ -9,7 +9,7 @@ import com.example.awesomitychallenge.entities.Users;
 
 public class UserMapper {
 
-    // maps the Userdto to the User
+    // maps the UserDto to the User
     public static UserDto map(Users users) {
         return new UserDto(users.getId(), users.getFirstName(), users.getLastName(), users.getEmail(), users.getPassword(), users.getPhoneNumber(), users.getAddress(), users.getRole());
     }

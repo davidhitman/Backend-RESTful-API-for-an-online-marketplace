@@ -1,14 +1,13 @@
 package com.example.awesomitychallenge.services;
 
 import com.example.awesomitychallenge.dto.OrderDto;
-import com.example.awesomitychallenge.entities.Orders;
 import org.springframework.data.domain.Page;
 
 
 public interface OrderService {
     OrderDto placeOrders(String productName, int quantity);
 
-    Page<Orders> viewOrderHistory(int offset, int pageSize);
+    Page<OrderDto> viewOrderHistory(int offset, int pageSize);
 
     void deleteOrderById(Long id);
 

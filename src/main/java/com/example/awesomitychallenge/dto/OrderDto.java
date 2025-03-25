@@ -1,7 +1,6 @@
 package com.example.awesomitychallenge.dto;
 
 
-import com.example.awesomitychallenge.entities.Category;
 import lombok.*;
 
 @Getter
@@ -33,4 +32,5 @@ public class OrderDto {
     private String orderStatus;
 
     private Long price;
+
 }

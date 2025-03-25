@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/admin")
+@PreAuthorize("hasAuthority('ADMIN')")
 public class AdminController {
 
     private UserService userService;
 
     @Operation(summary = "Admin Sign Up", description = "Registers a new Admin in the system")
-    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     public ResponseEntity<GenericResponse<UserDto>> adminSignUp(@Valid @RequestBody CreateAdminDto adminDto) {
         var adminSignup = userService.adminSignUp(adminDto);

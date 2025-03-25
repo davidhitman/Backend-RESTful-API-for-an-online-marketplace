@@ -23,11 +23,11 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class ApplicationConfig {
 
-    private final UserRepository user_repository;
+    private final UserRepository userRepository;
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> user_repository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return username -> userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     @Bean
@@ -41,6 +41,7 @@ public class ApplicationConfig {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setHideUserNotFoundExceptions(false);
         return authProvider;
     }
 
@@ -52,8 +53,8 @@ public class ApplicationConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI().info(new Info()
-                .title("Awesomity Challenge API Documentation").
-                description("API documentation for Awesomity Challenge, covering authentication, orders, products, and user management."))
+                .title("Backend Challenge API Documentation").
+                description("API documentation for Backend Challenge, covering authentication, orders, products, and user management."))
                 .security(Collections.singletonList(new SecurityRequirement()
                         .addList("BearerAuth")))
                 .components(new io.swagger.v3.oas.models.Components()
@@ -61,5 +62,4 @@ public class ApplicationConfig {
                                 .name("bearerAuth").type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer").bearerFormat("JWT")));
     }
-
 }

@@ -1,5 +1,6 @@
 services:
   app:
+
     container_name: spring_app
     restart: always
     depends_on:
@@ -37,4 +38,5 @@ services:
 
 volumes:
   postgres_data:
+
 
