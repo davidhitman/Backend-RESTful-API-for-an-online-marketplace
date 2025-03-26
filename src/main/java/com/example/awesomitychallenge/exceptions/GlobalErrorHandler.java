@@ -3,6 +3,7 @@ package com.example.awesomitychallenge.exceptions;
 
 import com.example.awesomitychallenge.controllers.GenericResponse;
 import io.jsonwebtoken.ExpiredJwtException;
+import lombok.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -30,7 +31,7 @@ public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
     }
 
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, @NonNull HttpHeaders headers, @NonNull HttpStatusCode status, @NonNull WebRequest request) {
         String errorMessage = ex.getBindingResult().getFieldErrors().stream()
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
                 .findFirst()

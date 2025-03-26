@@ -15,7 +15,7 @@ public class UserMapper {
     }
 
     public static Users map(CreateUserDto userDto) {
-        return new Users(userDto.getFirstName(), userDto.getLastName(), userDto.getEmail(), userDto.getPassword(), userDto.getPhoneNumber(), userDto.getAddress(), Role.ADMIN);
+        return new Users(userDto.getFirstName(), userDto.getLastName(), userDto.getEmail(), userDto.getPassword(), userDto.getPhoneNumber(), userDto.getAddress(), Role.USER);
     }
 
     public static Users map(CreateAdminDto adminDto) {

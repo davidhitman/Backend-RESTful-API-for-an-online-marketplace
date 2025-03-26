@@ -6,7 +6,6 @@ package com.example.awesomitychallenge.services.impl;
 import com.example.awesomitychallenge.dto.OrderDto;
 import com.example.awesomitychallenge.entities.Orders;
 import com.example.awesomitychallenge.mapper.OrderMapper;
-import com.example.awesomitychallenge.mapper.UserMapper;
 import com.example.awesomitychallenge.repositories.OrderRepository;
 import com.example.awesomitychallenge.repositories.ProductRepository;
 import com.example.awesomitychallenge.repositories.UserRepository;

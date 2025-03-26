@@ -1,15 +1,16 @@
 package com.example.awesomitychallenge.mapper;
 
-import com.example.awesomitychallenge.dto.RatingDto;
+import com.example.awesomitychallenge.dto.CreateRatingDto;
+import com.example.awesomitychallenge.dto.ViewRatingDto;
 import com.example.awesomitychallenge.entities.ProductRatings;
 
 public class RatingMapper {
 
-    public static ProductRatings map(RatingDto ratingDto) {
-        return new ProductRatings(ratingDto.getOrderId(), ratingDto.getRating());
+    public static ProductRatings map(CreateRatingDto createRatingDto) {
+        return new ProductRatings(createRatingDto.getRating());
     }
 
-    public static RatingDto map(ProductRatings rating) {
-        return new RatingDto(rating.getProduct().getProductName(), rating.getOrderId(), rating.getRating());
+    public static ViewRatingDto map(ProductRatings productRatings) {
+        return new ViewRatingDto( productRatings.getProduct().getProductName(), productRatings.getRating());
     }
 }

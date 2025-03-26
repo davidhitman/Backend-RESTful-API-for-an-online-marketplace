@@ -1,15 +1,12 @@
 package com.example.awesomitychallenge.services.impl;
 
 import com.example.awesomitychallenge.dto.CreateCategoryDto;
-import com.example.awesomitychallenge.dto.ProductDto;
 import com.example.awesomitychallenge.dto.UpdateCategoryDto;
 import com.example.awesomitychallenge.dto.ViewCategoryDto;
 import com.example.awesomitychallenge.entities.Category;
 import com.example.awesomitychallenge.entities.Orders;
 import com.example.awesomitychallenge.entities.Products;
-import com.example.awesomitychallenge.entities.Users;
 import com.example.awesomitychallenge.mapper.CategoryMapper;
-import com.example.awesomitychallenge.mapper.ProductMapper;
 import com.example.awesomitychallenge.repositories.CategoryRepository;
 import com.example.awesomitychallenge.repositories.OrderRepository;
 import com.example.awesomitychallenge.repositories.ProductRepository;

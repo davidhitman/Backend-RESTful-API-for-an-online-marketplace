@@ -20,10 +20,6 @@ public class ProductRatings {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="user_id")
-    private Long userId;
-    @Column(name="order_id")
-    private Long orderId;
     @Column(name="rating")
     private int rating;
 
@@ -31,8 +27,7 @@ public class ProductRatings {
     @JoinColumn(name="product_id", nullable = false)
     private Products product;
 
-    public ProductRatings(@NotNull(message = "OrderId cannot be blank") Long orderId, @NotNull(message="ratings cannot be blank") int rating) {
-        this.orderId = orderId;
+    public ProductRatings(@NotNull(message="ratings cannot be blank") int rating) {
         this.rating = rating;
     }
 }

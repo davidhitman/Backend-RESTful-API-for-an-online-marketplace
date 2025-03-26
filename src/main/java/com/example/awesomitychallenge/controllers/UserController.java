@@ -1,9 +1,9 @@
 package com.example.awesomitychallenge.controllers;
 
-import com.example.awesomitychallenge.dto.RatingDto;
+import com.example.awesomitychallenge.dto.CreateRatingDto;
 import com.example.awesomitychallenge.dto.UpdateUserDto;
 import com.example.awesomitychallenge.dto.UserDto;
-import com.example.awesomitychallenge.entities.ProductRatings;
+import com.example.awesomitychallenge.dto.ViewRatingDto;
 import com.example.awesomitychallenge.services.ProductRatingService;
 import com.example.awesomitychallenge.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,15 +48,21 @@ public class UserController {
         return ResponseEntity.ok(new GenericResponse<>("All Stored users", users));
     }
 
-    @Operation(summary = "Rate products", description = "Review and rate previously ordered products")
+    @Operation(summary = "Rate products", description = "Rate previously ordered products")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
     @PostMapping
-    public ResponseEntity<GenericResponse<RatingDto>> rateProducts(@RequestBody RatingDto ratingDto) {
-        var rate = productRatingService.rateProduct(ratingDto);
-        return ResponseEntity.ok(new GenericResponse<>("The Product Rating", rate));
+    public ResponseEntity<GenericResponse<String>> rateProducts(@Valid @RequestBody CreateRatingDto createRatingDto) {
+        productRatingService.rateProduct(createRatingDto);
+        return ResponseEntity.ok(new GenericResponse<>("The Product Rating", "Thanks for Rating the product"));
     }
 
-
+    @Operation(summary = "View Product Ratings", description = "Review Product Ratings")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+    @GetMapping("/rating")
+    public ResponseEntity<GenericResponse<Page<ViewRatingDto>>> viewProductsRating(@RequestParam(required = false) String productName, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "5") int pageSize) {
+        var rate = productRatingService.viewProductRate(productName, offset, pageSize);
+        return ResponseEntity.ok(new GenericResponse<>("Product Ratings", rate));
+    }
 
 }
 

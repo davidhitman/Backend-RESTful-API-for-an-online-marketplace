@@ -1,9 +1,10 @@
 package com.example.awesomitychallenge.services;
 
-import com.example.awesomitychallenge.dto.RatingDto;
-import com.example.awesomitychallenge.entities.ProductRatings;
+import com.example.awesomitychallenge.dto.CreateRatingDto;
+import com.example.awesomitychallenge.dto.ViewRatingDto;
+import org.springframework.data.domain.Page;
 
 public interface ProductRatingService {
-    RatingDto rateProduct(RatingDto productRatings);
-
+    void rateProduct(CreateRatingDto productRatings);
+    Page<ViewRatingDto> viewProductRate(String productName, int page, int size);
 }
