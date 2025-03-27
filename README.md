@@ -87,6 +87,7 @@ src/
 \`\`\`bash
 # Clone the repo
 git clone https://github.com/davidhitman/Backend-RESTful-API-for-an-online-marketplace.git
+
 cd awesomity-marketplace-backend
 
 # Configure application.properties
