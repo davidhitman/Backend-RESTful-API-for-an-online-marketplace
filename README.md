@@ -1,157 +1,227 @@
-Awesomity Challenge
+# 🛒 Awesomity Online Marketplace - Backend API
 
+A robust, scalable, and secure RESTful API for an online marketplace. This backend enables users to register, authenticate, browse products, place orders, and leave ratings, while also providing admin-level functionalities for full platform management.
 
-Overview
+---
 
-Features
+## 🚀 Features
 
-- User Authentication (Sign-up, and Login) using JWT.
-- Role-Based Access Control (Admin and User roles).
-- CRUD(create, read, update and delete) Operations for Users, Products, and Orders.
-- DTO-based Data Handling to ensure security and efficiency.
-- Spring Security Configuration for API protection.
-- Database Integration (JPA, PostgreSQL).
-- Email Notifications for order status updates and User signups.
+### 🔐 Authentication & Authorization
+- JWT-based login system
+- Role-based access control (`USER`, `ADMIN`)
+- Secure protected endpoints
 
-System Design
+### 👤 User Management
+- User/Admin registration & login
+- Profile update and deletion (by admin)
+- Admin-only access to view all users
 
-High-Level Architecture
+### 🛍️ Product Management
+- Admins can add, update, delete, and feature products
+- Users can browse and search products
 
-The system follows a layered architecture:
+### 🗂️ Categories
+- Admins can manage product categories
+- Products linked to categories
+- Browsing products by category
 
-1. Client (Frontend): Sends API requests.
-2. API Gateway (Spring Boot Controllers): Routes requests and enforces security.
-3. Security Configuration: Defines authentication and authorization rules.
-4. JWT Authentication & Authorization**: Manages token generation and validation.
-5. DTO Layer: Maps entities to objects used in API responses.
-6. Service Layer: Implements system's logic.
-7. Repositories (JPA): Handles database operations.
-8. Database (PostgreSQL): Stores application data.
+### 📦 Orders
+- Users can place orders
+- Orders are processed asynchronously via Kafka
+- Email notifications for status updates
+- Admins can update order status
 
-Component Interaction
+### ⭐ Ratings
+- Users can rate only purchased products
+- Ratings are viewable to all users
 
-- Users authenticate using JWT.
-- API Gateway checks security configuration before processing requests.
-- Service layer interacts with the database through repositories.
-- DTOs ensure structured data exchange between client and backend.
-- Email service notifies users of order status changes and successful signup .
+### 📨 Email Integration
+- Welcome emails on signup
+- Notifications on order updates
 
-API Endpoints
+### ⚙️ Kafka Queue Integration
+- Order processing is handled asynchronously via Kafka
+- Ensures scalability under high load
 
-- Authentication
+---
 
-| Method | Endpoint      | Description  |
-| ------ | ------------- | ------------ |
-| POST   | `/auth/`      | User Sign-up |
-| POST   | `/auth/login` | User Login   |
+## 🏗️ Architecture
 
-- User Management (Admin Only)
+- **Spring Boot 3.x**
+- **PostgreSQL**
+- **Spring Security**
+- **Kafka**
+- **Swagger (OpenAPI 3)**
+- **Lombok**
+- **Java Mail Sender**
+- **Docker-Ready (optional extension)**
 
-| Method | Endpoint        | Description          |
-| ------ | --------------- | -------------------- |
-| DELETE | `/user/{email}` | Delete user by email |
-| PUT    | `/user/{email}` | Update user details  |
-| GET    | `/user/`        | Get all users        |
+---
 
-Product Management
+## 📁 Project Structure
 
-| Method | Endpoint                         | Description                                  |
-| ------ | -------------------------------- |----------------------------------------------|
-| POST   | `/product/`                      | Add a new product (Admin)                    |
-| GET    | `/product/search/{category}`     | Search products by category (User and Admin) |
-| DELETE | `/product/{name}`                | Delete product (Admin)                       |
-| GET    | `/product/view-all-products`     | Get all products (Admin)                     |
-| GET    | `/product/view-product/{name}`   | Get single product details (Admin)           |
-| PUT    | `/product/update-product/{name}` | Update product (Admin)                       |
-| PATCH  | `/product/{productId}/featured`  | Mark product as featured (Admin)             |
-| GET    | `/product/categories`            | Get all product categories (Admin)           |
-| PUT    | `/product/change-category/{id}`  | Update product category (Admin)              |
+\`\`\`
+src/
+├── controllers/        # REST controllers for handling HTTP requests
+├── dto/                # Data transfer objects
+├── entities/           # JPA entities
+├── repositories/       # Spring Data JPA Repos
+├── services/           # Interfaces and service logic
+├── confugirations/     # JWT, Security, Kafka configs
+├── mapper/             # Mapper classes for entity <-> DTO
+├── exceptions/         # Custom error and access handlers
+\`\`\`
 
-Order Management
+---
 
-| Method | Endpoint                       | Description                             |
-| ------ | ------------------------------ |-----------------------------------------|
-| POST   | `/order/`                      | Place an order (User and Admin)         |
-| GET    | `/order/order-history/{email}` | Get user order history (User and Admin) |
-| DELETE | `/order/{id}`                  | Delete an order     (Admin)             |
-| PUT    | `/order/update-order/{id}`     | Update an order     (Admin)             |
-| GET    | `/order/view-status/{orderId}` | Get order status      (User and Admin)  |
-| PATCH  | `/order/{orderId}/status`      | Update order status (Admin)             |
+## 🔧 Getting Started
 
-
-
-Technologies
-
+### ✅ Prerequisites
 - Java 17+
-- Spring Boot 3+
-- PostgreSQL
 - Maven
+- PostgreSQL
+- Kafka & Zookeeper (running locally or via Docker)
 
-Steps to Run
+### 🔨 Setup & Run
 
-1. Clone the repository:
-   ```terminal
-   git clone https://github.com/your-repo/awesomity-challenge.git
-   cd awesomity-challenge
-   ```
-2. Configure the database in `application.properties`:
-   ```properties
-   spring.datasource.url=jdbc:mysql://localhost:3306/your_db
-   spring.datasource.username=root
-   spring.datasource.password=your_password
-   spring.jpa.hibernate.ddl-auto=update
-   ```
-3. Run the application:**
-   ```terminal
+\`\`\`bash
+# Clone the repo
+git clone https://github.com/davidhitman/Backend-RESTful-API-for-an-online-marketplace.git
+cd awesomity-marketplace-backend
 
-   mvn spring-boot:run
-   ````
+# Configure application.properties
+# (Set PostgreSQL and Kafka config)
 
-Swagger API Documentation
+# Run the app
+./mvnw spring-boot:run
+\`\`\`
 
-Once the application is running, visit:
+---
 
-```
-http://localhost:8080/swagger-ui.html
-```
+## 🔐 Environment Variables
 
-Security & Authentication
+Create your own `application.properties`:
 
-- JWT Token is required for accessing protected endpoints.
-- Roles:
-    - `USER`: Can place/view orders.
-    - `ADMIN`: Can manage users, products, and orders.
+\`\`\`
+# Database
+spring.datasource.url=jdbc:postgresql://localhost:5432/marketplace
+spring.datasource.username=yourusername
+spring.datasource.password=yourpassword
 
+# JWT
+jwt.secret=your-super-secret-key
 
-Start Docker or build the composer
-'docker compose up -d --build' - this is to start the docker composer
-'docker compose down' - this is to shut the composer down
+# Kafka
+spring.kafka.bootstrap-servers=localhost:9092
+\`\`\`
 
+---
 
-Run and Access of the Database in Docker
-'docker pull postgres' - download the latest postgres sql
-run the image in docker
-'docker run -d --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -v my_pgdata:/var/lib/postgresql/data postgres'
+## 🧪 Tests
 
-#Access the database
-'docker ps' - list of all running containers
-'docker exec -it <container_id> bash' - access the container shell
-'su - postgres' - switch to Postgres user
-'psql -U postgres' - connect to postgres interactive shell
-'\l' - view all databases
-'\c <database_name>' - connect to your database
-'\dt' - check the tables in the database
-'SELECT * FROM <table_name>;' - select all data from table
-to exit type '\q' exit the postgres shell then 'control D'
+- Unit and integration tests in place
+- Run tests via:
 
-To build a target folder that contain a .jar file
-'mvn clean package -DskipTests'
+\`\`\`bash
+./mvnw test
+\`\`\`
 
-to run docker database only 
-docker composer up -d db
+Minimum coverage: **60%+**
 
-to run Kafka in Docker
+---
+
+## 🧭 API Documentation
+
+- Swagger UI available at:  
+  \`\`\`
+  http://localhost:8080/swagger-ui.html
+  \`\`\`
+
+---
+
+## 🐳 Docker & Deployment
+
+### 🚀 Starting Docker Compose
+
+\`\`\`bash
+docker compose up -d --build      # Start containers
+docker compose down               # Stop containers
+\`\`\`
+
+---
+
+### 🛠️ Running PostgreSQL via Docker (Standalone)
+
+\`\`\`bash
+# Pull Postgres
+docker pull postgres
+
+# Run container
+docker run -d \
+  --name my-postgres \
+  -e POSTGRES_PASSWORD=mysecretpassword \
+  -p 5432:5432 \
+  -v my_pgdata:/var/lib/postgresql/data \
+  postgres
+\`\`\`
+
+---
+
+### 🧭 Accessing PostgreSQL Container
+
+\`\`\`bash
+docker ps                                   # List containers
+docker exec -it <container_id> bash        # Access container shell
+su - postgres                              # Switch user
+psql -U postgres                           # Connect to psql
+
+\l           # List databases
+\c <db>      # Connect to db
+\dt          # List tables
+SELECT * FROM <table>;  # View table data
+\q           # Exit psql
+Ctrl + D      # Exit container
+\`\`\`
+
+---
+
+### 🏗️ Build the Application
+
+\`\`\`bash
+mvn clean package -DskipTests     # Build .jar file
+\`\`\`
+
+---
+
+### ⚙️ Run Specific Docker Services
+
+\`\`\`bash
+docker compose up -d db           # Start only database service
+\`\`\`
+
+---
+
+### 🛰️ Run Kafka in Docker (Standalone)
+
+\`\`\`bash
 docker pull apache/kafka:4.0.0
 docker run -p 9092:9092 apache/kafka:4.0.0
+\`\`\`
+
+---
+
+## 📚 Technologies Used
+
+- Spring Boot
+- Spring Security
+- PostgreSQL
+- Kafka
+- Swagger
+- JWT
+- Docker
+- Mail Sender (SMTP)
+
+---
+
 
 
